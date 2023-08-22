@@ -1,0 +1,19 @@
+# Ignition
+
+Utility library for FireStart [go-lang](https://go.dev/) projects.
+
+## Installation
+
+```bash
+go get gitlab.com/firestart/ignition
+```
+
+## Features
+
+- ### Ignition
+  - [x] Null Coalescing
+  - [x] Pointer dereferencing and value referencing
+- ### Maintenance Server
+  - [x] Maintenance Server
+  - [x] Health Checks (Liveness and Readiness)
+  - [x] Metrics
