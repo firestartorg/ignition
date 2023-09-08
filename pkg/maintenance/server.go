@@ -5,7 +5,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
-	"gitlab.com/firestart/ignition/ignition"
+	"gitlab.com/firestart/ignition"
 	"net/http"
 	"os"
 	"time"
