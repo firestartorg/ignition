@@ -73,7 +73,7 @@ func Load(name string) (cfg *Config, err error) {
 		return
 	}
 
-	var cfg0, cfg1, cfg2 *Config
+	var cfg0, cfg1 *Config
 
 	// Load default config
 	cfg0, err = loadConfigFile(path, name)
@@ -90,18 +90,29 @@ func Load(name string) (cfg *Config, err error) {
 		}
 	}
 
-	// Load config from environment
-	cfg2, err = loadFromEnvironment()
-
 	// Merge configs
 	cfg = NewConfig()
 	cfg.Merge(cfg0)
 	cfg.Merge(cfg1)
-	cfg.Merge(cfg2)
 
 	return
 }
 
-func LoadSettings() (cfg *Config, err error) {
-	return Load("appsettings")
+// LoadConfig loads the default configuration file and environment variables.
+func LoadConfig() (cfg *Config, err error) {
+	// Load default config
+	cfg, err = Load("appsettings")
+	if err != nil {
+		return
+	}
+
+	// Load environment variables
+	var cfg1 *Config
+	cfg1, err = LoadEnviron("IGNITION")
+	if err != nil {
+		return
+	}
+	cfg.Merge(cfg1)
+
+	return
 }

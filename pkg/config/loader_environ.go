@@ -5,18 +5,18 @@ import (
 	"strings"
 )
 
-func loadFromEnvironment() (cfg *Config, err error) {
-	cfg = &Config{
-		fields: make(map[string]string),
-	}
+// LoadEnviron loads configuration from environment variables.
+func LoadEnviron(prefix string) (cfg *Config, err error) {
+	prefix = prefix + "_"
+	cfg = NewConfig()
 
 	kvs := os.Environ()
 	for _, kv := range kvs {
 		// Check if key starts with IGNITION_ prefix and ignore if not found (not a config key)
-		if !strings.HasPrefix(kv, "IGNITION_") {
+		if !strings.HasPrefix(kv, prefix) {
 			continue
 		}
-		kv = strings.TrimPrefix(kv, "IGNITION_")
+		kv = strings.TrimPrefix(kv, prefix)
 
 		// Split key and value
 		parts := strings.SplitN(kv, "=", 2)
