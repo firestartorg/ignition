@@ -13,12 +13,20 @@ type Config struct {
 		Username string
 	}
 
-	Test []string
+	Test     []string
+	TestMap  map[string]string
+	TestMap2 map[string]struct {
+		Test string
+	}
 }
 
 func main() {
 	var cfg Config
 	configuration, _ := config.LoadConfig()
+
+	configuration.Set("TestMap:Test", "test")
+	configuration.Set("TestMap2:Test:Test", "test")
+
 	_ = configuration.Unpack(&cfg)
 
 	fmt.Println(configuration.Get("Greeting:Hello"))

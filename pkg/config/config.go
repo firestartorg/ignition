@@ -3,6 +3,7 @@ package config
 import (
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -51,6 +52,17 @@ func (cfg *Config) Merge(other *Config) {
 	}
 }
 
+func (cfg *Config) Sub(key string) *Config {
+	key = key + ":"
+	sub := NewConfig()
+	for k, v := range cfg.fields {
+		if len(k) > len(key) && k[:len(key)] == key {
+			sub.fields[k[len(key):]] = v
+		}
+	}
+	return sub
+}
+
 func (cfg *Config) Clone() *Config {
 	clone := NewConfig()
 	clone.Merge(cfg)
@@ -96,6 +108,37 @@ func unpack(v interface{}, keySpace *string, cfg *Config) error {
 				return err
 			}
 			continue
+		} else if kind == reflect.Map {
+			cfg1 := cfg.Sub(key)
+			set := map[string]bool{}
+
+			// Determine all keys in the map
+			for _, key := range cfg1.Keys() {
+				key = strings.SplitN(key, ":", 2)[0]
+				set[key] = true
+			}
+
+			// Create map
+			value.Set(reflect.MakeMap(value.Type()))
+
+			// Set map values
+			for key := range set {
+				switch value.Type().Elem().Kind() {
+				case reflect.String:
+					value.SetMapIndex(reflect.ValueOf(key), reflect.ValueOf(cfg1.Get(key)))
+				case reflect.Struct:
+					mapValue := reflect.New(value.Type().Elem()).Elem()
+
+					err := unpack(mapValue.Addr().Interface(), &key, cfg1)
+					if err != nil {
+						return err
+					}
+
+					value.SetMapIndex(reflect.ValueOf(key), mapValue)
+				}
+			}
+
+			continue
 		} else if kind == reflect.Array || kind == reflect.Slice {
 			var counter int
 			var keys []string
@@ -112,7 +155,6 @@ func unpack(v interface{}, keySpace *string, cfg *Config) error {
 			}
 
 			value.Set(reflect.MakeSlice(value.Type(), len(keys), len(keys)))
-			//value.SetLen(len(keys))
 
 			for i, key := range keys {
 				val := cfg.Get(key)
