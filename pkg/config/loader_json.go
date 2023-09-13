@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func loadFromFile(path string) (data []byte, err error) {
@@ -48,7 +49,11 @@ func loadFromJson(path string) (cfg *Config, err error) {
 func unpackGeneric(jsonObj map[string]interface{}, keySpace *string, cap bool, config *Config) error {
 	for key, val := range jsonObj {
 		if cap {
-			key = ignition.CapitalizeString(key)
+			parts := strings.Split(key, "-")
+			for i, p := range parts {
+				parts[i] = ignition.CapitalizeString(p)
+			}
+			key = strings.Join(parts, "")
 		}
 		// Check if key is a nested object
 		if keySpace != nil {
