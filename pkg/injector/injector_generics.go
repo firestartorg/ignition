@@ -14,7 +14,11 @@ func getOrDefaultInjector(injector *Injector) *Injector {
 }
 
 func getTypeName[T any](value T) string {
-	return reflect.TypeOf(value).PkgPath() + "/" + reflect.TypeOf(value).Name()
+	valType := reflect.TypeOf(value)
+	if valType.Kind() == reflect.Ptr {
+		valType = valType.Elem()
+	}
+	return valType.PkgPath() + "/" + valType.Name()
 }
 
 // Inject injects the given value into the injector
