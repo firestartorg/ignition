@@ -1,6 +1,8 @@
 package injector
 
-import "fmt"
+import (
+	"reflect"
+)
 
 var defaultInjector = NewInjector()
 
@@ -12,7 +14,7 @@ func getOrDefaultInjector(injector *Injector) *Injector {
 }
 
 func getTypeName[T any](value T) string {
-	return fmt.Sprintf("%T", value)
+	return reflect.TypeOf(value).PkgPath() + "/" + reflect.TypeOf(value).Name()
 }
 
 // Inject injects the given value into the injector
