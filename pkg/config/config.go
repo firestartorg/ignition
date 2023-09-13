@@ -123,9 +123,13 @@ func unpack(v interface{}, keySpace *string, cfg *Config) error {
 
 			// Set map values
 			for key := range set {
+				// This is required to because of enum types
+				keyValue := reflect.New(value.Type().Key()).Elem()
+				keyValue.SetString(key)
+
 				switch value.Type().Elem().Kind() {
 				case reflect.String:
-					value.SetMapIndex(reflect.ValueOf(key), reflect.ValueOf(cfg1.Get(key)))
+					value.SetMapIndex(keyValue, reflect.ValueOf(cfg1.Get(key)))
 				case reflect.Struct:
 					mapValue := reflect.New(value.Type().Elem()).Elem()
 
@@ -134,7 +138,7 @@ func unpack(v interface{}, keySpace *string, cfg *Config) error {
 						return err
 					}
 
-					value.SetMapIndex(reflect.ValueOf(key), mapValue)
+					value.SetMapIndex(keyValue, mapValue)
 				}
 			}
 

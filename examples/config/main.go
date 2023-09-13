@@ -6,6 +6,12 @@ import (
 	"gitlab.com/firestart/ignition/pkg/config"
 )
 
+type Enum string
+
+const (
+	EnumTest Enum = "test"
+)
+
 type Config struct {
 	Database struct {
 		Host     string
@@ -18,6 +24,7 @@ type Config struct {
 	TestMap2 map[string]struct {
 		Test string
 	}
+	TestEnum map[Enum]string
 }
 
 func main() {
@@ -26,6 +33,7 @@ func main() {
 
 	configuration.Set("TestMap:Test", "test")
 	configuration.Set("TestMap2:Test:Test", "test")
+	configuration.Set("TestEnum:test", "test")
 
 	_ = configuration.Unpack(&cfg)
 
