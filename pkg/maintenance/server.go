@@ -11,8 +11,6 @@ import (
 	"time"
 )
 
-type HealthCheck func(ctx context.Context) (bool, error)
-
 type ServerConfig struct {
 	Metrics            bool
 	Health             bool
