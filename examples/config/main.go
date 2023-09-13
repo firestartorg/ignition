@@ -12,6 +12,8 @@ type Config struct {
 		Port     int
 		Username string
 	}
+
+	Test []string
 }
 
 func main() {

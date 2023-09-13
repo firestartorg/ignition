@@ -98,6 +98,11 @@ func Load(name string) (cfg *Config, err error) {
 	return
 }
 
+// LoadFile loads a configuration file from the specified path and returns a Config object.
+func LoadFile(file string) (cfg *Config, err error) {
+	return loadConfigFile(filepath.Dir(file), filepath.Base(file))
+}
+
 // LoadConfig loads the default configuration file and environment variables.
 func LoadConfig() (cfg *Config, err error) {
 	// Load default config

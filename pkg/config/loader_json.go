@@ -71,6 +71,15 @@ func unpackGeneric(jsonObj map[string]interface{}, keySpace *string, cap bool, c
 			config.Set(key, strconv.FormatInt(int64(val.(int)), 10))
 		case uint:
 			config.Set(key, strconv.FormatUint(uint64(val.(uint)), 10))
+		case []interface{}:
+			m := map[string]interface{}{}
+			for i, v := range val.([]interface{}) {
+				m[strconv.Itoa(i)] = v
+			}
+			err := unpackGeneric(m, &key, cap, config)
+			if err != nil {
+				return err
+			}
 		default:
 			config.Set(key, val.(string))
 		}

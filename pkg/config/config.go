@@ -96,6 +96,118 @@ func unpack(v interface{}, keySpace *string, cfg *Config) error {
 				return err
 			}
 			continue
+		} else if kind == reflect.Array || kind == reflect.Slice {
+			var counter int
+			var keys []string
+			for {
+				key := key + ":" + strconv.Itoa(counter)
+
+				_, ok := cfg.Lookup(key)
+				if !ok {
+					break
+				}
+
+				keys = append(keys, key)
+				counter++
+			}
+
+			value.Set(reflect.MakeSlice(value.Type(), len(keys), len(keys)))
+			//value.SetLen(len(keys))
+
+			for i, key := range keys {
+				val := cfg.Get(key)
+
+				value := value.Index(i)
+				switch value.Kind() {
+				case reflect.String:
+					value.SetString(val)
+				case reflect.Bool:
+					boolVal, err := strconv.ParseBool(val)
+					if err != nil {
+						return err
+					}
+					value.SetBool(boolVal)
+				case reflect.Float32:
+					floatVal, err := strconv.ParseFloat(val, 32)
+					if err != nil {
+						return err
+					}
+					value.SetFloat(floatVal)
+				case reflect.Float64:
+					floatVal, err := strconv.ParseFloat(val, 64)
+					if err != nil {
+						return err
+					}
+					value.SetFloat(floatVal)
+				case reflect.Uint:
+					uintVal, err := strconv.ParseUint(val, 10, 32)
+					if err != nil {
+						return err
+					}
+					value.SetUint(uintVal)
+				case reflect.Uint8:
+					uintVal, err := strconv.ParseUint(val, 10, 8)
+					if err != nil {
+						return err
+					}
+					value.SetUint(uintVal)
+				case reflect.Uint16:
+					uintVal, err := strconv.ParseUint(val, 10, 16)
+					if err != nil {
+						return err
+					}
+					value.SetUint(uintVal)
+				case reflect.Uint32:
+					uintVal, err := strconv.ParseUint(val, 10, 32)
+					if err != nil {
+						return err
+					}
+					value.SetUint(uintVal)
+				case reflect.Uint64:
+					uintVal, err := strconv.ParseUint(val, 10, 64)
+					if err != nil {
+						return err
+					}
+					value.SetUint(uintVal)
+				case reflect.Int:
+					intVal, err := strconv.ParseInt(val, 10, 32)
+					if err != nil {
+						return err
+					}
+					value.SetInt(intVal)
+				case reflect.Int8:
+					intVal, err := strconv.ParseInt(val, 10, 8)
+					if err != nil {
+						return err
+					}
+					value.SetInt(intVal)
+				case reflect.Int16:
+					intVal, err := strconv.ParseInt(val, 10, 16)
+					if err != nil {
+						return err
+					}
+					value.SetInt(intVal)
+				case reflect.Int32:
+					intVal, err := strconv.ParseInt(val, 10, 32)
+					if err != nil {
+						return err
+					}
+					value.SetInt(intVal)
+				case reflect.Int64:
+					intVal, err := strconv.ParseInt(val, 10, 64)
+					if err != nil {
+						return err
+					}
+					value.SetInt(intVal)
+				case reflect.Struct:
+					err := unpack(value.Addr().Interface(), &key, cfg)
+					if err != nil {
+						return err
+					}
+				}
+			}
+
+			continue
 		}
 
 		// Get field value
