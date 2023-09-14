@@ -15,6 +15,7 @@ func InjectConfig[T any](injector *Injector) error {
 		return err
 	}
 
+	Inject(injector, dyn)
 	Inject(injector, conf)
 	return nil
 }
@@ -25,4 +26,20 @@ func MustInjectConfig[T any](injector *Injector) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+// ExtractConfig extracts a sub configuration from the injected configuration
+func ExtractConfig[T any](injector *Injector, key string) (value T, err error) {
+	var conf config.Config
+	conf, err = Get[config.Config](injector)
+	if err != nil {
+		return
+	}
+
+	err = conf.Sub(key).Unpack(&value)
+	if err != nil {
+		return
+	}
+
+	return
 }
