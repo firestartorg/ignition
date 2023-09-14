@@ -15,7 +15,7 @@ func InjectConfig[T any](injector *Injector) error {
 		return err
 	}
 
-	Inject(injector, dyn)
+	Inject(injector, *dyn)
 	Inject(injector, conf)
 	return nil
 }
