@@ -5,6 +5,7 @@ import (
 	"gitlab.com/firestart/ignition"
 	"io"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -48,13 +49,7 @@ func loadFromJson(path string) (cfg *Config, err error) {
 
 func unpackGeneric(jsonObj map[string]interface{}, keySpace *string, cap bool, config *Config) error {
 	for key, val := range jsonObj {
-		if cap {
-			parts := strings.Split(key, "-")
-			for i, p := range parts {
-				parts[i] = ignition.CapitalizeString(p)
-			}
-			key = strings.Join(parts, "")
-		}
+		key = unpackFixName(key, cap)
 		// Check if key is a nested object
 		if keySpace != nil {
 			key = *keySpace + ":" + key
@@ -90,4 +85,18 @@ func unpackGeneric(jsonObj map[string]interface{}, keySpace *string, cap bool, c
 		}
 	}
 	return nil
+}
+
+var re = regexp.MustCompile("[-_]+")
+
+func unpackFixName(name string, cap bool) string {
+	if cap {
+		parts := re.Split(name, -1)
+		for i, p := range parts {
+			parts[i] = ignition.CapitalizeString(p)
+		}
+		name = strings.Join(parts, "")
+	}
+
+	return name
 }
