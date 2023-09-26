@@ -53,8 +53,8 @@ func (h *Hooks) AddShutdown(f HookFunc) {
 	h.Add(HookShutdown, f)
 }
 
-// runWithContext runs the hooks for the given hook
-func (h *Hooks) runWithContext(hook Hook, ctx context.Context, app App) error {
+// RunWithContext runs the hooks for the given hook
+func (h *Hooks) RunWithContext(hook Hook, ctx context.Context, app App) error {
 	h.hooksMutex.Lock()
 	defer h.hooksMutex.Unlock()
 
@@ -64,17 +64,59 @@ func (h *Hooks) runWithContext(hook Hook, ctx context.Context, app App) error {
 	}
 
 	for _, f := range h.hooks[hook] {
-		go func(f HookFunc) {
-			if err := f(ctx, app); err != nil {
-				panic(err)
-			}
-		}(f)
+		if err := f(ctx, app); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-// run runs the hooks for the given hook
-func (h *Hooks) run(hook Hook, app App) error {
-	return h.runWithContext(hook, context.Background(), app)
+// Run runs the hooks for the given hook
+func (h *Hooks) Run(hook Hook, app App) error {
+	return h.RunWithContext(hook, context.Background(), app)
+}
+
+// waitUntil runs the hooks and waits until they are all done
+func (h *Hooks) waitUntil(hook Hook, app App) error {
+	ctx := context.Background()
+
+	fs := h.cloneHook(hook)
+
+	// Create a wait group
+	var wg sync.WaitGroup
+	// Add the number of hooks to the wait group
+	wg.Add(len(fs))
+
+	for _, f := range fs {
+		go func(f HookFunc) {
+			defer wg.Done()
+
+			err := f(ctx, app)
+			if err != nil {
+				app.logger.Error().Err(err).Msg("Hook failed")
+				panic(err)
+			}
+		}(f)
+	}
+
+	wg.Wait()
+
+	return nil
+}
+
+func (h *Hooks) cloneHook(hook Hook) []HookFunc {
+	h.hooksMutex.Lock()
+	defer h.hooksMutex.Unlock()
+
+	// Create the hook map if it doesn't exist
+	if _, ok := h.hooks[hook]; !ok {
+		return []HookFunc{}
+	}
+
+	// Copies the hooks
+	hooks := make([]HookFunc, len(h.hooks[hook]))
+	copy(hooks, h.hooks[hook])
+
+	return hooks
 }

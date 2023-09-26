@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"gitlab.com/firestart/ignition/pkg/injector"
 )
 
@@ -23,6 +24,8 @@ func New(opts ...Option) App {
 	app := App{
 		Injector: injector.NewInjector(),
 		hooks:    newHooks(),
+
+		logger: log.With().Timestamp().Logger(),
 	}
 
 	// Apply the options
@@ -40,14 +43,14 @@ func (a App) Run() {
 		a.logger.Info().Msg("Stopping application")
 
 		// Run the shutdown hooks
-		err := a.hooks.run(HookShutdown, a)
+		err := a.hooks.Run(HookShutdown, a)
 		if err != nil {
 			panic(err)
 		}
 	}()
 
 	// Run the startup hooks
-	err := a.hooks.run(HookStartup, a)
+	err := a.hooks.waitUntil(HookStartup, a)
 	if err != nil {
 		panic(err)
 	}

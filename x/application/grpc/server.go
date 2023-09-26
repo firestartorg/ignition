@@ -5,6 +5,7 @@ import (
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/x/application"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"net"
 )
 
@@ -32,6 +33,9 @@ func WithServer(opts ...grpc.ServerOption) application.Option {
 
 		// Add the startup hook
 		hooks.AddStartup(func(ctx context.Context, app application.App) error {
+			//fmt.Println("Starting gRPC server")
+
+			// Start the server
 			listen, err := net.Listen("tcp", ":5000")
 			if err != nil {
 				return err
@@ -49,9 +53,7 @@ func WithServer(opts ...grpc.ServerOption) application.Option {
 	}
 }
 
-type RegisterFunc = func(s grpc.ServiceRegistrar, srv any)
-
-func AddService(app application.App, register RegisterFunc, srv any) error {
+func AddService(app application.App, desc grpc.ServiceDesc, srv any) error {
 	// Get the server
 	s, err := injector.GetNamed[server](app.Injector, ServerName)
 	if err != nil {
@@ -59,14 +61,25 @@ func AddService(app application.App, register RegisterFunc, srv any) error {
 	}
 
 	// Register the service
-	register(s.server, srv)
+	s.server.RegisterService(&desc, srv)
 
 	return nil
 }
 
 // MustAddService adds a service to the application, panicking if it fails
-func MustAddService(app application.App, register RegisterFunc, srv any) {
-	if err := AddService(app, register, srv); err != nil {
+func MustAddService(app application.App, desc grpc.ServiceDesc, srv any) {
+	if err := AddService(app, desc, srv); err != nil {
 		panic(err)
 	}
+}
+
+// MustUseReflection adds reflection to the grpc application.
+// Experimental, may be removed, changed or replaced with a better solution in the future.
+func MustUseReflection(app application.App) {
+	s, err := injector.GetNamed[server](app.Injector, ServerName)
+	if err != nil {
+		panic(err)
+	}
+
+	reflection.Register(s.server)
 }
