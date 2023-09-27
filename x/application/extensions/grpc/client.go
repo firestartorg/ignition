@@ -4,7 +4,7 @@ import (
 	"context"
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/x/application"
-	"gitlab.com/firestart/ignition/x/application/monitor"
+	"gitlab.com/firestart/ignition/x/application/extensions/monitor"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
 	"sync"
