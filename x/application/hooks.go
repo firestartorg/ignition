@@ -12,15 +12,25 @@ const (
 	HookStartup Hook = "startup"
 	// HookShutdown is a hook that is called when the application shuts down
 	HookShutdown Hook = "shutdown"
+
+	// HookInit is a hook that is called when the application is initialized.
+	// This hook is primarily used for context processing.
+	HookInit Hook = "init"
 )
 
 type HookFunc func(ctx context.Context, app App) error
+type ContextHookFunc func(ctx context.Context, app App) (context.Context, error)
 
 // Hooks is a struct that can be used to inject hooks into the application
 type Hooks struct {
 	hooks map[Hook][]HookFunc
 	// hooksMutex is a mutex to protect the hooks map from concurrent access
 	hooksMutex sync.Mutex
+
+	// contextHooks is a map of context hooks
+	contextHooks map[Hook][]ContextHookFunc
+	// contextHooksMutex is a mutex to protect the contextHooks map from concurrent access
+	contextHooksMutex sync.Mutex
 }
 
 func newHooks() *Hooks {
@@ -53,8 +63,42 @@ func (h *Hooks) AddShutdown(f HookFunc) {
 	h.Add(HookShutdown, f)
 }
 
+// AddContext adds a context hook to the application
+func (h *Hooks) AddContext(hook Hook, f ContextHookFunc) {
+	h.contextHooksMutex.Lock()
+	defer h.contextHooksMutex.Unlock()
+
+	// Create the hook map if it doesn't exist
+	if _, ok := h.contextHooks[hook]; !ok {
+		h.contextHooks[hook] = make([]ContextHookFunc, 0)
+	}
+
+	h.contextHooks[hook] = append(h.contextHooks[hook], f)
+}
+
+// ProcessContext runs the context hooks for the given hook
+func (h *Hooks) ProcessContext(hook Hook, ctx context.Context, app App) (context.Context, error) {
+	h.contextHooksMutex.Lock()
+	defer h.contextHooksMutex.Unlock()
+
+	// Create the hook map if it doesn't exist
+	if _, ok := h.contextHooks[hook]; !ok {
+		return ctx, nil
+	}
+
+	for _, f := range h.contextHooks[hook] {
+		var err error
+		ctx, err = f(ctx, app)
+		if err != nil {
+			return ctx, err
+		}
+	}
+
+	return ctx, nil
+}
+
 // RunWithContext runs the hooks for the given hook
-func (h *Hooks) RunWithContext(hook Hook, ctx context.Context, app App) error {
+func (h *Hooks) RunWithContext(hook Hook, app App, ctx context.Context) error {
 	h.hooksMutex.Lock()
 	defer h.hooksMutex.Unlock()
 
@@ -74,12 +118,20 @@ func (h *Hooks) RunWithContext(hook Hook, ctx context.Context, app App) error {
 
 // Run runs the hooks for the given hook
 func (h *Hooks) Run(hook Hook, app App) error {
-	return h.RunWithContext(hook, context.Background(), app)
+	ctx, err := h.context(app)
+	if err != nil {
+		return err
+	}
+
+	return h.RunWithContext(hook, app, ctx)
 }
 
 // waitUntil runs the hooks and waits until they are all done
 func (h *Hooks) waitUntil(hook Hook, app App) error {
-	ctx := context.Background()
+	ctx, err := h.context(app)
+	if err != nil {
+		return err
+	}
 
 	fs := h.cloneHook(hook)
 
@@ -103,6 +155,11 @@ func (h *Hooks) waitUntil(hook Hook, app App) error {
 	wg.Wait()
 
 	return nil
+}
+
+// context returns the context for the given hook
+func (h *Hooks) context(app App) (context.Context, error) {
+	return h.ProcessContext(HookInit, context.Background(), app)
 }
 
 func (h *Hooks) cloneHook(hook Hook) []HookFunc {

@@ -92,7 +92,7 @@ func getStatus(ctx context.Context, app application.App, hooks *application.Hook
 	defer cancel()
 
 	// Check all the hooks
-	err := hooks.RunWithContext(hook, pctx, app)
+	err := hooks.RunWithContext(hook, app, pctx)
 	if err != nil {
 		return false
 	}
