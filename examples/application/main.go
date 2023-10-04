@@ -9,13 +9,14 @@ import (
 	"gitlab.com/firestart/ignition/x/application/extensions/grpc"
 	"gitlab.com/firestart/ignition/x/application/extensions/http"
 	"gitlab.com/firestart/ignition/x/application/extensions/monitor"
+	"gitlab.com/firestart/ignition/x/application/extensions/vcs"
 	http1 "net/http"
 )
 
 func main() {
 	// Create the application
 	app := application.New(
-		apps.WithVersion("sample", "1.0.0"),
+		vcs.WithBuildInfo("examples/application"),
 		apps.WithHealthCheck(func(ctx context.Context, app application.App) error {
 			return nil
 		}),
