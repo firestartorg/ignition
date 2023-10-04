@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"gitlab.com/firestart/ignition/pkg/injector"
+	"gitlab.com/firestart/ignition/pkg/mongoutil"
 	"gitlab.com/firestart/ignition/x/application"
 	"gitlab.com/firestart/ignition/x/application/extensions/monitor"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -70,7 +71,7 @@ func provideFactory(s settings) func(inj *injector.Injector) (client, error) {
 				panic(err)
 			}
 
-			s.ClientOptions = options.Client().ApplyURI(conf.ConnectionString)
+			s.ClientOptions = options.Client().ApplyURI(conf.ConnectionString).SetRegistry(mongoutil.BsonRegistry)
 			s.Database = conf.Database
 			s.Collections = conf.Collection
 		}
