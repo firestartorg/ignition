@@ -6,24 +6,16 @@ import (
 	"net/http"
 )
 
-func newMiddleware(handler http.Handler, app application.App, hooks *application.Hooks) http.Handler {
+// Middleware is a function that wraps a http handler
+type Middleware = func(handler http.Handler) http.Handler
+
+// newBaseMiddleware creates a new the default middleware for the server
+func newBaseMiddleware(handler http.Handler, app application.App, hooks *application.Hooks) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Server", "Ignition")
 
 		// Get the request context
 		ctx := r.Context()
-
-		// Recover from panics
-		defer func() {
-			if err := recover(); err != nil {
-				log.Ctx(ctx).Panic().Interface("panic", err).Msg("Recovered from panic")
-
-				// Process the request context
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte("{\"error\":\"Internal Server Error\"}"))
-			}
-		}()
 
 		// If there are no hooks, just serve the request
 		if hooks == nil {

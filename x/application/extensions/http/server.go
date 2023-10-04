@@ -34,13 +34,7 @@ func WithServer(opts ...ServerOption) application.Option {
 // WithNamedServer adds a named http router to the application.
 func WithNamedServer(name string, opts ...ServerOption) application.Option {
 	// Create the server options with the defaults
-	options := ServerOptions{
-		port: 3000,
-	}
-	// Apply the options
-	for _, opt := range opts {
-		opt(&options)
-	}
+	options := newServerOptions(opts...)
 
 	return func(app application.App, hooks *application.Hooks) {
 		// Inject the server container into the application
@@ -57,7 +51,11 @@ func WithNamedServer(name string, opts ...ServerOption) application.Option {
 				return err
 			}
 
-			handler := newMiddleware(srv.router, app, hooks)
+			// Wrap the router with the middlewares
+			handler := srv.options.wrapMiddleware(srv.router)
+			handler = newBaseMiddleware(handler, app, hooks)
+
+			// Create the server
 			srv.server = &http.Server{Addr: srv.options.addr(), Handler: handler}
 			injector.InjectNamed(app.Injector, name, srv) // Update the server container
 

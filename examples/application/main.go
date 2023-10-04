@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/firestart/ignition/examples/application/pb"
 	"gitlab.com/firestart/ignition/x/application"
@@ -11,8 +12,11 @@ import (
 	"gitlab.com/firestart/ignition/x/application/extensions/http"
 	"gitlab.com/firestart/ignition/x/application/extensions/logging"
 	"gitlab.com/firestart/ignition/x/application/extensions/monitor"
+	"gitlab.com/firestart/ignition/x/application/extensions/sentry"
+	"gitlab.com/firestart/ignition/x/application/extensions/sentry/tracing"
 	"gitlab.com/firestart/ignition/x/application/extensions/vcs"
 	http1 "net/http"
+	"os"
 )
 
 func main() {
@@ -24,12 +28,25 @@ func main() {
 		}),
 		monitor.WithDefaultMonitor(),
 
-		logging.WithDefaultZerolog(),
+		sentry.WithSentry(
+			sentry.WithDsn("https://912642dbd878f3999a37d9d42937a5ec@o4505345231945728.ingest.sentry.io/4505992844804096"),
+			sentry.EnableTracing(),
+		),
+		logging.WithZerolog(
+			zerolog.New(os.Stderr).With().
+				Timestamp().
+				Stack().
+				Caller().
+				Logger().
+				Hook(sentry.LoggerHook{}),
+		),
 
 		grpc.WithClientFactory(),
 		grpc.WithServer(),
 
-		http.WithServer(),
+		http.WithServer(
+			http.WithMiddleware(tracing.NewHttpMiddleware),
+		),
 	)
 
 	// Setup the gRPC server
