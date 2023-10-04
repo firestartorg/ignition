@@ -10,6 +10,21 @@ func newMiddleware(handler http.Handler, app application.App, hooks *application
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Server", "Ignition")
 
+		// Get the request context
+		ctx := r.Context()
+
+		// Recover from panics
+		defer func() {
+			if err := recover(); err != nil {
+				log.Ctx(ctx).Panic().Interface("panic", err).Msg("Recovered from panic")
+
+				// Process the request context
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				_, _ = w.Write([]byte("{\"error\":\"Internal Server Error\"}"))
+			}
+		}()
+
 		// If there are no hooks, just serve the request
 		if hooks == nil {
 			handler.ServeHTTP(w, r)
@@ -18,10 +33,9 @@ func newMiddleware(handler http.Handler, app application.App, hooks *application
 
 		var err error
 		// Process the request context
-		ctx := r.Context()
 		ctx, err = hooks.ProcessContext(application.HookRequest, ctx, app)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to process request context")
+			log.Ctx(ctx).Error().Err(err).Msg("Failed to process request context")
 			return
 		}
 

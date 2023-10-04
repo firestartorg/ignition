@@ -42,6 +42,9 @@ func main() {
 
 		_, _ = w.Write([]byte("Hello World"))
 	})
+	http.MustAddGetRoute(app, "/panic", func(w http1.ResponseWriter, r *http1.Request, ps httprouter.Params) {
+		panic("Panic!")
+	})
 
 	// Run the application
 	app.Run()
