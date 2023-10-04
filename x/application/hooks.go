@@ -126,6 +126,33 @@ func (h *Hooks) Run(hook Hook, app App) error {
 	return h.RunWithContext(hook, app, ctx)
 }
 
+func (h *Hooks) shutdown(app App) error {
+	h.hooksMutex.Lock()
+	defer h.hooksMutex.Unlock()
+
+	// Create the hook map if it doesn't exist
+	if _, ok := h.hooks[HookShutdown]; !ok {
+		return nil
+	}
+
+	// Create a context
+	ctx, err := h.context(app)
+	if err != nil {
+		return err
+	}
+
+	// loop through the hooks in reverse order
+	for i := len(h.hooks[HookShutdown]) - 1; i >= 0; i-- {
+		f := h.hooks[HookShutdown][i]
+		err = f(ctx, app)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // waitUntil runs the hooks and waits until they are all done
 func (h *Hooks) waitUntil(hook Hook, app App) error {
 	ctx, err := h.context(app)

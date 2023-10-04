@@ -4,6 +4,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"github.com/julienschmidt/httprouter"
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/x/application"
@@ -57,9 +58,13 @@ func WithNamedServer(name string, opts ...ServerOption) application.Option {
 			}
 
 			srv.server = &http.Server{Addr: srv.options.addr(), Handler: srv.router}
-			//injector.InjectNamed(app.Injector, name, srv)
+			injector.InjectNamed(app.Injector, name, srv) // Update the server container
 
-			return srv.server.ListenAndServe()
+			err = srv.server.ListenAndServe()
+			if errors.Is(err, http.ErrServerClosed) {
+				return nil
+			}
+			return err
 		})
 
 		// Add a shutdown hook
