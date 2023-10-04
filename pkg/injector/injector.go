@@ -2,7 +2,6 @@ package injector
 
 import (
 	"errors"
-	"github.com/rs/zerolog"
 	"sync"
 )
 
@@ -11,8 +10,6 @@ var (
 )
 
 type Injector struct {
-	// logger is the logger used by the injector
-	logger *zerolog.Logger
 	// mu is a mutex to protect the Injector from concurrent access
 	mu sync.RWMutex
 
@@ -28,10 +25,6 @@ func NewInjector() *Injector {
 		namedInjectables: make(map[string]interface{}),
 		injectables:      make(map[string]interface{}),
 	}
-}
-
-func (i *Injector) SetLogger(logger *zerolog.Logger) {
-	i.logger = logger
 }
 
 func (i *Injector) set(name string, injectable any, named bool) {
