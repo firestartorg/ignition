@@ -57,7 +57,8 @@ func WithNamedServer(name string, opts ...ServerOption) application.Option {
 				return err
 			}
 
-			srv.server = &http.Server{Addr: srv.options.addr(), Handler: srv.router}
+			handler := newMiddleware(srv.router, app, hooks)
+			srv.server = &http.Server{Addr: srv.options.addr(), Handler: handler}
 			injector.InjectNamed(app.Injector, name, srv) // Update the server container
 
 			err = srv.server.ListenAndServe()

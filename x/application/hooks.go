@@ -16,6 +16,9 @@ const (
 	// HookInit is a hook that is called when the application is initialized.
 	// This hook is primarily used for context processing.
 	HookInit Hook = "init"
+	// HookRequest is a hook that is called when a request is received.
+	// This hook is primarily used for context processing.
+	HookRequest Hook = "request"
 )
 
 type HookFunc func(ctx context.Context, app App) error

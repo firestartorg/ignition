@@ -22,7 +22,7 @@ func NewBlankApp(name string, opts ...application.Option) application.App {
 			config.WithSettings(),
 			sentry.WithDefaultSentry(),
 			monitor.WithDefaultMonitor(),
-			logging.WithZerolog(),
+			logging.WithDefaultZerolog(),
 		},
 		opts,
 	)...)

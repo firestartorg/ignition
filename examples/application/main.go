@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/zerolog/log"
 	"gitlab.com/firestart/ignition/examples/application/pb"
 	"gitlab.com/firestart/ignition/x/application"
 	"gitlab.com/firestart/ignition/x/application/extensions/apps"
 	"gitlab.com/firestart/ignition/x/application/extensions/grpc"
 	"gitlab.com/firestart/ignition/x/application/extensions/http"
+	"gitlab.com/firestart/ignition/x/application/extensions/logging"
 	"gitlab.com/firestart/ignition/x/application/extensions/monitor"
 	"gitlab.com/firestart/ignition/x/application/extensions/vcs"
 	http1 "net/http"
@@ -22,6 +24,8 @@ func main() {
 		}),
 		monitor.WithDefaultMonitor(),
 
+		logging.WithDefaultZerolog(),
+
 		grpc.WithClientFactory(),
 		grpc.WithServer(),
 
@@ -34,6 +38,8 @@ func main() {
 
 	// Setup the HTTP server
 	http.MustAddGetRoute(app, "/hello", func(w http1.ResponseWriter, r *http1.Request, ps httprouter.Params) {
+		log.Ctx(r.Context()).Info().Msg("Hello World")
+
 		_, _ = w.Write([]byte("Hello World"))
 	})
 
