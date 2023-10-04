@@ -25,36 +25,11 @@ type client struct {
 
 // WithMongoClient adds a mongo client to the application.
 func WithMongoClient(opts ...Option) application.Option {
-	s := newSettings(opts...)
-
 	return func(app application.App, hooks *application.Hooks) {
-		// If the Config option is set, load the Config
-		if s.Config {
-			conf, err := injector.ExtractConfig[Config](app.Injector, "Mongo")
-			if err != nil {
-				panic(err)
-			}
-
-			s.ClientOptions = options.Client().ApplyURI(conf.ConnectionString)
-			s.Database = conf.Database
-			s.Collections = conf.Collection
-		}
-
-		hooks.AddStartup(func(ctx context.Context, app application.App) error {
-			cl, err := mongo.Connect(ctx, s.ClientOptions)
-			if err != nil {
-				return err
-			}
-
-			var db *mongo.Database
-			if s.Database != "" {
-				db = cl.Database(s.Database)
-			}
-
-			injector.InjectNamed(app.Injector, Name, client{cl, db, s})
-
-			return nil
-		})
+		// Create the settings
+		s := newSettings(opts...)
+		// Add provide the client
+		injector.ProvideNamed(app.Injector, Name, provideFactory(s))
 
 		hooks.AddShutdown(func(ctx context.Context, app application.App) error {
 			cl, err := injector.GetNamed[client](app.Injector, Name)
@@ -83,6 +58,34 @@ func WithMongoClient(opts ...Option) application.Option {
 
 			return nil
 		})
+	}
+}
+
+func provideFactory(s settings) func(inj *injector.Injector) (client, error) {
+	return func(inj *injector.Injector) (client, error) {
+		// If the Config option is set, load the Config
+		if s.Config {
+			conf, err := injector.ExtractConfig[Config](inj, "Mongo")
+			if err != nil {
+				panic(err)
+			}
+
+			s.ClientOptions = options.Client().ApplyURI(conf.ConnectionString)
+			s.Database = conf.Database
+			s.Collections = conf.Collection
+		}
+
+		cl, err := mongo.Connect(context.Background(), s.ClientOptions)
+		if err != nil {
+			return client{}, err
+		}
+
+		var db *mongo.Database
+		if s.Database != "" {
+			db = cl.Database(s.Database)
+		}
+
+		return client{cl, db, s}, nil
 	}
 }
 
