@@ -28,7 +28,7 @@ type server struct {
 }
 
 func WithServer(opts ...ServerOption) application.Option {
-	return WithNamedServer(ServerName)
+	return WithNamedServer(ServerName, opts...)
 }
 
 // WithNamedServer adds a named http router to the application.

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	sentry1 "github.com/getsentry/sentry-go"
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -55,9 +56,18 @@ func main() {
 
 	// Setup the HTTP server
 	http.MustAddGetRoute(app, "/hello", func(w http1.ResponseWriter, r *http1.Request, ps httprouter.Params) {
-		log.Ctx(r.Context()).Info().Msg("Hello World")
+		ctx := r.Context()
 
+		// Create a new span
+		span := sentry1.StartSpan(ctx, "function")
+		span.Description = "suboperation2"
+
+		// Do some work
+		log.Ctx(ctx).Info().Msg("Hello World")
 		_, _ = w.Write([]byte("Hello World"))
+
+		// Finish the span
+		span.Finish()
 	})
 	http.MustAddGetRoute(app, "/panic", func(w http1.ResponseWriter, r *http1.Request, ps httprouter.Params) {
 		panic("Panic!")
