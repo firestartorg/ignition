@@ -35,8 +35,10 @@ type Hooks struct {
 
 func newHooks() *Hooks {
 	return &Hooks{
-		hooks:      make(map[Hook][]HookFunc),
-		hooksMutex: sync.Mutex{},
+		hooks:             make(map[Hook][]HookFunc),
+		hooksMutex:        sync.Mutex{},
+		contextHooks:      map[Hook][]ContextHookFunc{},
+		contextHooksMutex: sync.Mutex{},
 	}
 }
 
