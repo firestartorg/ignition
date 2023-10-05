@@ -97,7 +97,7 @@ var _ pb.GreeterServer = (*Greeter)(nil)
 
 func ProvideGreeterService(app application.App) {
 	srv := Greeter{
-		client: grpc.MustNewClient(app, "localhost:5000", pb.NewGreeterClient),
+		client: grpc.MustNewClient(app.Injector, "localhost:5000", pb.NewGreeterClient),
 	}
 	grpc.MustAddService(app, pb.Greeter_ServiceDesc, srv)
 	return

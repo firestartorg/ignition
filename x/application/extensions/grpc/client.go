@@ -88,9 +88,9 @@ func WithClientFactory(opts ...grpc.DialOption) application.Option {
 }
 
 // NewClientConnection creates a new client
-func NewClientConnection(app application.App, target string) (*grpc.ClientConn, error) {
+func NewClientConnection(inj *injector.Injector, target string) (*grpc.ClientConn, error) {
 	// Get the client clientFactory
-	f, err := injector.GetNamed[*clientFactory](app.Injector, ClientFactoryName)
+	f, err := injector.GetNamed[*clientFactory](inj, ClientFactoryName)
 	if err != nil {
 		return nil, err
 	}
@@ -99,9 +99,9 @@ func NewClientConnection(app application.App, target string) (*grpc.ClientConn, 
 }
 
 // MustNewClientConnection creates a new client and panics if there is an error
-func MustNewClientConnection(app application.App, target string) *grpc.ClientConn {
+func MustNewClientConnection(inj *injector.Injector, target string) *grpc.ClientConn {
 	// Create the client
-	conn, err := NewClientConnection(app, target)
+	conn, err := NewClientConnection(inj, target)
 	if err != nil {
 		panic(err)
 	}
@@ -111,10 +111,10 @@ func MustNewClientConnection(app application.App, target string) *grpc.ClientCon
 type NewClientFunc[T interface{}] func(conn grpc.ClientConnInterface) T
 
 // NewClient creates a new client
-func NewClient[T interface{}](app application.App, target string, f NewClientFunc[T]) (c T, err error) {
+func NewClient[T interface{}](inj *injector.Injector, target string, f NewClientFunc[T]) (c T, err error) {
 	// Create the client
 	var conn *grpc.ClientConn
-	conn, err = NewClientConnection(app, target)
+	conn, err = NewClientConnection(inj, target)
 	if err != nil {
 		return
 	}
@@ -125,9 +125,9 @@ func NewClient[T interface{}](app application.App, target string, f NewClientFun
 }
 
 // MustNewClient creates a new client and panics if there is an error
-func MustNewClient[T interface{}](app application.App, target string, f NewClientFunc[T]) T {
+func MustNewClient[T interface{}](inj *injector.Injector, target string, f NewClientFunc[T]) T {
 	// Create the client
-	c, err := NewClient[T](app, target, f)
+	c, err := NewClient[T](inj, target, f)
 	if err != nil {
 		panic(err)
 	}
