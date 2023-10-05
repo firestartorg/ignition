@@ -26,6 +26,10 @@ func WithSentry(opts ...Option) application.Option {
 				opt(&s)
 			}
 		}
+		if !s.Enabled {
+			log.Warn().Msg("Sentry is disabled")
+			return
+		}
 
 		// Initialize sentry
 		err := sentry.Init(sentry.ClientOptions{

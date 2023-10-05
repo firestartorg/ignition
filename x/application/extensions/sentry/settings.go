@@ -4,6 +4,9 @@ type Settings struct {
 	// config is a flag that indicates that the injected config should be used
 	config bool
 
+	// Enabled is a flag that indicates that the sentry extension is enabled
+	Enabled bool
+
 	// FlushTimeout is the timeout for the sentry flush. Defaults to 2s.
 	FlushTimeout int
 
@@ -19,6 +22,7 @@ type Settings struct {
 // newSettings creates a new Settings struct
 func newSettings(opts ...Option) Settings {
 	s := Settings{
+		Enabled:          true,
 		FlushTimeout:     2,
 		TracesSampleRate: 1,
 	}
