@@ -43,8 +43,8 @@ func main() {
 		),
 
 		presets.WithRpcClientFactory(),
-		presets.WithRpcServer(),
-		presets.WithHttpServer(),
+		presets.WithRpcServer(5000),
+		presets.WithHttpServer(3000),
 	)
 
 	// Setup the gRPC server
