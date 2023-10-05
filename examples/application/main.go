@@ -14,8 +14,8 @@ import (
 	"gitlab.com/firestart/ignition/x/application/extensions/logging"
 	"gitlab.com/firestart/ignition/x/application/extensions/monitor"
 	"gitlab.com/firestart/ignition/x/application/extensions/sentry"
-	"gitlab.com/firestart/ignition/x/application/extensions/sentry/tracing"
 	"gitlab.com/firestart/ignition/x/application/extensions/vcs"
+	"gitlab.com/firestart/ignition/x/application/presets"
 	http1 "net/http"
 	"os"
 )
@@ -42,17 +42,14 @@ func main() {
 				Hook(sentry.LoggerHook{}),
 		),
 
-		grpc.WithClientFactory(),
-		grpc.WithServer(),
-
-		http.WithServer(
-			http.WithMiddleware(tracing.NewHttpMiddleware),
-		),
+		presets.WithRpcClientFactory(),
+		presets.WithRpcServer(),
+		presets.WithHttpServer(),
 	)
 
 	// Setup the gRPC server
 	grpc.MustUseReflection(app)
-	grpc.MustAddService(app, pb.Greeter_ServiceDesc, Greeter{})
+	ProvideGreeterService(app)
 
 	// Setup the HTTP server
 	http.MustAddGetRoute(app, "/hello", func(w http1.ResponseWriter, r *http1.Request, ps httprouter.Params) {
@@ -77,10 +74,31 @@ func main() {
 	app.Run()
 }
 
-type Greeter struct{}
+type Greeter struct {
+	client pb.GreeterClient
+}
+
+func (g Greeter) Panic(ctx context.Context, request *pb.HelloRequest) (*pb.HelloReply, error) {
+	panic(request.Name)
+}
 
 func (g Greeter) SayHello(ctx context.Context, request *pb.HelloRequest) (*pb.HelloReply, error) {
+	log.Ctx(ctx).Info().Msgf("Received: %s", request.Name)
+
+	_, err := g.client.Panic(ctx, &pb.HelloRequest{Name: "Panic!"})
+	if err != nil {
+		return nil, err
+	}
+
 	return &pb.HelloReply{Message: "Hello " + request.Name}, nil
 }
 
 var _ pb.GreeterServer = (*Greeter)(nil)
+
+func ProvideGreeterService(app application.App) {
+	srv := Greeter{
+		client: grpc.MustNewClient(app, "localhost:5000", pb.NewGreeterClient),
+	}
+	grpc.MustAddService(app, pb.Greeter_ServiceDesc, srv)
+	return
+}

@@ -9,6 +9,8 @@ type Settings struct {
 
 	// Dsn is the sentry DSN
 	Dsn              string
+	Environment      string
+	Release          string
 	EnableTracing    bool
 	TracesSampleRate float64
 	Debug            bool
@@ -67,5 +69,19 @@ func WithFlushTimeout(flushTimeout int) Option {
 func EnableTracing() Option {
 	return func(s *Settings) {
 		s.EnableTracing = true
+	}
+}
+
+// WithRelease sets the sentry release
+func WithRelease(release string) Option {
+	return func(s *Settings) {
+		s.Release = release
+	}
+}
+
+// WithEnvironment sets the sentry environment
+func WithEnvironment(environment string) Option {
+	return func(s *Settings) {
+		s.Environment = environment
 	}
 }

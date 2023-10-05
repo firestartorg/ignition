@@ -23,6 +23,13 @@ type server struct {
 // WithServer sets the server
 func WithServer(opts ...grpc.ServerOption) application.Option {
 	return func(app application.App, hooks *application.Hooks) {
+		// Pack the server options
+		opts = packServer(
+			[]grpc.ServerOption{
+				grpc.ChainUnaryInterceptor(UnaryServerInterceptor(app, hooks)),
+				grpc.ChainStreamInterceptor(StreamServerInterceptor(app, hooks)),
+			},
+			opts)
 		// Create the server
 		srv := grpc.NewServer(opts...)
 

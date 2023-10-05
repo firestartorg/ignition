@@ -29,7 +29,10 @@ func WithSentry(opts ...Option) application.Option {
 
 		// Initialize sentry
 		err := sentry.Init(sentry.ClientOptions{
-			Dsn:              s.Dsn,
+			Dsn:         s.Dsn,
+			Environment: s.Environment,
+			Release:     s.Release,
+
 			EnableTracing:    s.EnableTracing,
 			TracesSampleRate: s.TracesSampleRate,
 			Debug:            s.Debug,

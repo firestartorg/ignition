@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/getsentry/sentry-go v0.25.0
 	github.com/google/uuid v1.3.0
+	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.31.0

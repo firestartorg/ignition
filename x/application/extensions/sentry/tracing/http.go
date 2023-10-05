@@ -4,17 +4,20 @@ import (
 	"context"
 	"fmt"
 	"github.com/getsentry/sentry-go"
+	"github.com/rs/zerolog/log"
 	"net/http"
 	"time"
 )
 
-func NewHttpMiddleware(handler http.Handler) http.Handler {
+func HttpMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 
 		// Add a sentry hub to the request context
 		hub := sentry.GetHubFromContext(ctx)
 		if hub == nil {
+			log.Ctx(ctx).Warn().Msg("No sentry hub found in context")
+			handler.ServeHTTP(w, r)
 			return
 		}
 

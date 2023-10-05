@@ -108,10 +108,10 @@ func MustNewClientConnection(app application.App, target string) *grpc.ClientCon
 	return conn
 }
 
-type NewClientFunc = func(conn *grpc.ClientConn) interface{}
+type NewClientFunc[T interface{}] func(conn grpc.ClientConnInterface) T
 
 // NewClient creates a new client
-func NewClient[T interface{}](app application.App, target string, f NewClientFunc) (c T, err error) {
+func NewClient[T interface{}](app application.App, target string, f NewClientFunc[T]) (c T, err error) {
 	// Create the client
 	var conn *grpc.ClientConn
 	conn, err = NewClientConnection(app, target)
@@ -120,12 +120,12 @@ func NewClient[T interface{}](app application.App, target string, f NewClientFun
 	}
 
 	// Create the client
-	c = f(conn).(T)
+	c = f(conn)
 	return
 }
 
 // MustNewClient creates a new client and panics if there is an error
-func MustNewClient[T interface{}](app application.App, target string, f NewClientFunc) T {
+func MustNewClient[T interface{}](app application.App, target string, f NewClientFunc[T]) T {
 	// Create the client
 	c, err := NewClient[T](app, target, f)
 	if err != nil {
