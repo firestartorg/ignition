@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/x/application"
 	"google.golang.org/grpc"
@@ -20,8 +21,8 @@ type server struct {
 	server *grpc.Server
 }
 
-// WithServer sets the server
-func WithServer(opts ...grpc.ServerOption) application.Option {
+// WithServerPort sets the server
+func WithServerPort(port int16, opts ...grpc.ServerOption) application.Option {
 	return func(app application.App, hooks *application.Hooks) {
 		// Pack the server options
 		opts = packServer(
@@ -43,7 +44,7 @@ func WithServer(opts ...grpc.ServerOption) application.Option {
 			//fmt.Println("Starting gRPC server")
 
 			// Start the server
-			listen, err := net.Listen("tcp", ":5000")
+			listen, err := net.Listen("tcp", fmt.Sprint(":", port))
 			if err != nil {
 				return err
 			}
@@ -58,6 +59,11 @@ func WithServer(opts ...grpc.ServerOption) application.Option {
 			return nil
 		})
 	}
+}
+
+// WithServer adds a server to the application
+func WithServer(opts ...grpc.ServerOption) application.Option {
+	return WithServerPort(5000, opts...)
 }
 
 func AddService(app application.App, desc grpc.ServiceDesc, srv any) error {

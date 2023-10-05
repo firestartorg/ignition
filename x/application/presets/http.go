@@ -7,8 +7,9 @@ import (
 )
 
 // WithHttpServer adds the http server to the application
-func WithHttpServer() application.Option {
+func WithHttpServer(port int16) application.Option {
 	return http.WithServer(
+		http.WithPort(port),
 		http.WithMiddleware(tracing.HttpMiddleware),
 	)
 }
@@ -21,8 +22,22 @@ func NewHttpApp(name string, opts ...application.Option) application.App {
 		pack(
 			opts,
 			[]application.Option{
-				WithHttpServer(),
+				MakeConfigurable("App", func(config httpConfig) []application.Option {
+					// Set the default port
+					if config.Port == 0 {
+						config.Port = 3000
+					}
+
+					return []application.Option{
+						WithHttpServer(config.Port),
+					}
+				}),
 			},
 		)...,
 	)
+}
+
+type httpConfig struct {
+	// Port is the port to listen on
+	Port int16
 }

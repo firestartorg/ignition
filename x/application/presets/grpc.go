@@ -21,8 +21,9 @@ func WithRpcClientFactory() application.Option {
 }
 
 // WithRpcServer adds the grpc server to the application
-func WithRpcServer() application.Option {
-	return grpc.WithServer(
+func WithRpcServer(port int16) application.Option {
+	return grpc.WithServerPort(
+		port,
 		grpc1.ChainUnaryInterceptor(
 			tracing.UnaryServerInterceptor(),
 			grpc_recovery.UnaryServerInterceptor(grpc_recovery.WithRecoveryHandlerContext(recovery.RpcRecoveryHandler)),
@@ -44,7 +45,16 @@ func NewRpcApp(name string, opts ...application.Option) application.App {
 		pack(
 			opts,
 			[]application.Option{
-				WithRpcServer(),
+				MakeConfigurable("App", func(config grpcConfig) []application.Option {
+					// Set the default port
+					if config.Port == 0 {
+						config.Port = 5000
+					}
+
+					return []application.Option{
+						WithRpcServer(config.Port),
+					}
+				}),
 			},
 		)...,
 	)
@@ -54,4 +64,9 @@ func NewRpcApp(name string, opts ...application.Option) application.App {
 	}
 
 	return app
+}
+
+type grpcConfig struct {
+	// Port is the port to listen on
+	Port int16
 }
