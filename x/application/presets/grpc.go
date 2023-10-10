@@ -2,6 +2,7 @@ package presets
 
 import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"gitlab.com/firestart/ignition/x/application"
 	"gitlab.com/firestart/ignition/x/application/extensions/grpc"
 	"gitlab.com/firestart/ignition/x/application/extensions/sentry/recovery"
@@ -13,24 +14,42 @@ import (
 
 // WithRpcClientFactory adds the grpc client to the application
 func WithRpcClientFactory() application.Option {
+	opts := []logging.Option{
+		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
+		// Add any other option (check functions starting with logging.With).
+	}
+
 	return grpc.WithClientFactory(
 		grpc1.WithTransportCredentials(insecure.NewCredentials()),
-		grpc1.WithChainUnaryInterceptor(tracing.UnaryClientInterceptor()),
-		grpc1.WithChainStreamInterceptor(tracing.StreamClientInterceptor()),
+		grpc1.WithChainUnaryInterceptor(
+			tracing.UnaryClientInterceptor(),
+			logging.UnaryClientInterceptor(GrpcLogger, opts...),
+		),
+		grpc1.WithChainStreamInterceptor(
+			tracing.StreamClientInterceptor(),
+			logging.StreamClientInterceptor(GrpcLogger, opts...),
+		),
 	)
 }
 
 // WithRpcServer adds the grpc server to the application
 func WithRpcServer(port int16) application.Option {
+	opts := []logging.Option{
+		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
+		// Add any other option (check functions starting with logging.With).
+	}
+
 	return grpc.WithServerPort(
 		port,
 		grpc1.ChainUnaryInterceptor(
 			tracing.UnaryServerInterceptor(),
 			grpc_recovery.UnaryServerInterceptor(grpc_recovery.WithRecoveryHandlerContext(recovery.RpcRecoveryHandler)),
+			logging.UnaryServerInterceptor(GrpcLogger, opts...),
 		),
 		grpc1.ChainStreamInterceptor(
 			tracing.StreamServerInterceptor(),
 			grpc_recovery.StreamServerInterceptor(grpc_recovery.WithRecoveryHandlerContext(recovery.RpcRecoveryHandler)),
+			logging.StreamServerInterceptor(GrpcLogger, opts...),
 		),
 	)
 }
