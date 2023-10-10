@@ -47,7 +47,7 @@ func WithRpcServer(port int16) application.Option {
 			logging.UnaryServerInterceptor(GrpcLogger, opts...),
 		),
 		grpc1.ChainStreamInterceptor(
-			tracing.StreamServerInterceptor(),
+			// tracing.StreamServerInterceptor(),
 			grpc_recovery.StreamServerInterceptor(grpc_recovery.WithRecoveryHandlerContext(recovery.RpcRecoveryHandler)),
 			logging.StreamServerInterceptor(GrpcLogger, opts...),
 		),
