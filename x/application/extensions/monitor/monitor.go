@@ -62,7 +62,7 @@ func WithMonitor(opts ...Option) application.Option {
 
 func readinessProbeHandle(app application.App, hooks *application.Hooks, options *Options) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		ok := getStatus(context.Background(), app, hooks, HookHealth, options) ||
+		ok := getStatus(context.Background(), app, hooks, HookHealth, options) &&
 			getStatus(context.Background(), app, hooks, HookReadiness, options)
 
 		if !ok {
@@ -75,7 +75,7 @@ func readinessProbeHandle(app application.App, hooks *application.Hooks, options
 
 func livenessProbeHandle(app application.App, hooks *application.Hooks, options *Options) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		ok := getStatus(context.Background(), app, hooks, HookHealth, options) ||
+		ok := getStatus(context.Background(), app, hooks, HookHealth, options) &&
 			getStatus(context.Background(), app, hooks, HookLiveness, options)
 
 		if !ok {

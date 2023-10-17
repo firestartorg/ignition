@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"errors"
+	"github.com/rs/zerolog/log"
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/pkg/mongoutil"
 	"gitlab.com/firestart/ignition/x/application"
@@ -46,7 +47,7 @@ func WithMongoClient(opts ...Option) application.Option {
 			return nil
 		})
 
-		hooks.Add(monitor.HookHealth, func(ctx context.Context, app application.App) error {
+		hooks.Add(monitor.HookReadiness, func(ctx context.Context, app application.App) error {
 			cl, err := injector.GetNamed[client](app.Injector, Name)
 			if err != nil {
 				return err
@@ -54,6 +55,7 @@ func WithMongoClient(opts ...Option) application.Option {
 
 			err = cl.client.Ping(ctx, nil)
 			if err != nil {
+				log.Ctx(ctx).Error().Err(err).Msg("mongo health check failed")
 				return err
 			}
 

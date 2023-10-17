@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"github.com/rs/zerolog/log"
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/x/application"
 	"gitlab.com/firestart/ignition/x/application/extensions/monitor"
@@ -72,13 +73,14 @@ func WithClientFactory(opts ...grpc.DialOption) application.Option {
 		})
 
 		// Add health check hook
-		hooks.Add(monitor.HookHealth, func(ctx context.Context, app application.App) error {
+		hooks.Add(monitor.HookReadiness, func(ctx context.Context, app application.App) error {
 			// Check all the clients
 			factory.clientsMutex.RLock()
 			defer factory.clientsMutex.RUnlock()
 
 			for _, client := range factory.clients {
 				if client.GetState() != connectivity.Ready {
+					log.Ctx(ctx).Error().Str("target", client.Target()).Msg("grpc client is not ready")
 					return monitor.ErrNotReady
 				}
 			}
