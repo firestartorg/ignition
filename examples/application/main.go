@@ -9,6 +9,7 @@ import (
 	"gitlab.com/firestart/ignition/examples/application/pb"
 	"gitlab.com/firestart/ignition/x/application"
 	"gitlab.com/firestart/ignition/x/application/extensions/apps"
+	"gitlab.com/firestart/ignition/x/application/extensions/config"
 	"gitlab.com/firestart/ignition/x/application/extensions/grpc"
 	"gitlab.com/firestart/ignition/x/application/extensions/http"
 	"gitlab.com/firestart/ignition/x/application/extensions/logging"
@@ -27,7 +28,13 @@ func main() {
 		apps.WithHealthCheck(func(ctx context.Context, app application.App) error {
 			return nil
 		}),
-		monitor.WithDefaultMonitor(),
+		config.WithSettings(),
+		monitor.WithMonitor(
+			monitor.FromConfig(),
+			monitor.WithPrometheusMetrics(),
+			monitor.WithReadiness(),
+			monitor.WithLiveness(),
+		),
 
 		sentry.WithSentry(
 			sentry.WithDsn("https://912642dbd878f3999a37d9d42937a5ec@o4505345231945728.ingest.sentry.io/4505992844804096"),
@@ -43,7 +50,7 @@ func main() {
 		),
 
 		presets.WithRpcClientFactory(),
-		presets.WithRpcServer(5000),
+		presets.WithRpcServer(5001),
 		presets.WithHttpServer(3000),
 	)
 

@@ -25,7 +25,12 @@ func NewBlankApp(name string, opts ...application.Option) application.App {
 			vcs.WithBuildInfo(name),
 			config.WithSettings(),
 			sentry.WithDefaultSentry(),
-			monitor.WithDefaultMonitor(),
+			monitor.WithMonitor(
+				monitor.FromConfig(),
+				monitor.WithPrometheusMetrics(),
+				monitor.WithReadiness(),
+				monitor.WithLiveness(),
+			),
 			logging.WithConfigurableZerolog(logger),
 		},
 		opts,

@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/zerolog/log"
+	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/x/application"
+	"net"
 	"net/http"
-	"time"
 )
 
 var (
@@ -20,17 +22,17 @@ var (
 
 // WithMonitor adds a health monitor to the application.
 func WithMonitor(opts ...Option) application.Option {
-	// Apply the options
-	options := &Options{
-		// Default
-		port:    8080,
-		timeout: time.Second * 5,
-	}
-	for _, opt := range opts {
-		opt(options)
-	}
-
 	return func(app application.App, hooks *application.Hooks) {
+		// Apply the options
+		options := newOptions(opts...)
+		// Check if the config should be used
+		if options.config {
+			conf, err := injector.ExtractConfig[Config](app.Injector, "App:Monitor")
+			if err == nil {
+				conf.apply(&options)
+			}
+		}
+
 		//var listener *net.Listener
 		router := httprouter.New()
 
@@ -49,8 +51,27 @@ func WithMonitor(opts ...Option) application.Option {
 
 		// Add a startup hook
 		hooks.AddStartup(func(ctx context.Context, app application.App) error {
+			// Start the server
 			err := http.ListenAndServe(fmt.Sprintf(":%d", options.port), router)
-			return err
+			// Check if the error is a "port already in use" error
+			var opErr *net.OpError
+			if options.portAuto && errors.As(err, &opErr) && opErr.Op == "listen" && opErr.Net == "tcp" {
+				// Try again
+				var listener net.Listener
+				listener, err = net.Listen("tcp", ":0")
+				if err != nil {
+					return err
+				}
+				port := listener.Addr().(*net.TCPAddr).Port
+
+				// Log the port change
+				log.Ctx(ctx).Info().Int("port", port).Msg("monitor: port already in use, using available port")
+
+				// Start the server
+				return http.Serve(listener, router)
+			} else {
+				return err
+			}
 		})
 
 		//// Add a shutdown hook
@@ -60,7 +81,7 @@ func WithMonitor(opts ...Option) application.Option {
 	}
 }
 
-func readinessProbeHandle(app application.App, hooks *application.Hooks, options *Options) httprouter.Handle {
+func readinessProbeHandle(app application.App, hooks *application.Hooks, options Options) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ok := getStatus(context.Background(), app, hooks, HookHealth, options) &&
 			getStatus(context.Background(), app, hooks, HookReadiness, options)
@@ -73,7 +94,7 @@ func readinessProbeHandle(app application.App, hooks *application.Hooks, options
 	}
 }
 
-func livenessProbeHandle(app application.App, hooks *application.Hooks, options *Options) httprouter.Handle {
+func livenessProbeHandle(app application.App, hooks *application.Hooks, options Options) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		ok := getStatus(context.Background(), app, hooks, HookHealth, options) &&
 			getStatus(context.Background(), app, hooks, HookLiveness, options)
@@ -87,7 +108,7 @@ func livenessProbeHandle(app application.App, hooks *application.Hooks, options 
 }
 
 // getStatus returns the status of the given health hook
-func getStatus(ctx context.Context, app application.App, hooks *application.Hooks, hook application.Hook, options *Options) bool {
+func getStatus(ctx context.Context, app application.App, hooks *application.Hooks, hook application.Hook, options Options) bool {
 	pctx, cancel := context.WithTimeout(ctx, options.timeout)
 	defer cancel()
 
