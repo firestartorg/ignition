@@ -16,6 +16,7 @@ func WithZerolog(logger zerolog.Logger) application.Option {
 
 		// Set the global logger
 		log.Logger = logger
+		zerolog.DefaultContextLogger = &logger // Also set the default context logger for zerolog (used if log.Ctx(ctx) is called)
 
 		hooks.AddContext(application.HookInit, hookFn)
 		hooks.AddContext(application.HookRequest, hookFn)
