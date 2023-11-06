@@ -24,7 +24,7 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 		// If finished, the span will be sent to sentry
 		defer span.Finish()
 
-		// Add the sentry trace and baggage headers to the metadata
+		// AddHook the sentry trace and baggage headers to the metadata
 		ctx = getSpanContext(span)
 
 		err := invoker(ctx, method, req, reply, cc, callOpts...)
@@ -37,7 +37,7 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 			}
 		}
 
-		// Add the response status to the span
+		// AddHook the response status to the span
 		span.Status = ToSpanStatus(status.Code(err))
 
 		return err
@@ -59,7 +59,7 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 		// If finished, the span will be sent to sentry
 		defer span.Finish()
 
-		// Add the sentry trace and baggage headers to the metadata
+		// AddHook the sentry trace and baggage headers to the metadata
 		ctx = getSpanContext(span)
 
 		stream, err := streamer(ctx, desc, cc, method, callOpts...)
@@ -80,7 +80,7 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 func getSpanContext(span *sentry.Span) context.Context {
 	ctx := span.Context()
 
-	// Add the sentry trace and baggage headers to the metadata
+	// AddHook the sentry trace and baggage headers to the metadata
 	trace := span.ToSentryTrace()
 	if trace != "" {
 		ctx = metadata.AppendToOutgoingContext(ctx, sentry.SentryTraceHeader, trace)

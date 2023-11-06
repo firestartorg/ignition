@@ -17,7 +17,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		info *grpc.UnaryServerInfo,
 		handler grpc.UnaryHandler) (interface{}, error) {
 
-		// Add a sentry hub to the request context
+		// AddHook a sentry hub to the request context
 		hub := sentry.GetHubFromContext(ctx)
 		if hub == nil {
 			log.Ctx(ctx).Warn().Msg("No sentry hub found in context")
@@ -38,9 +38,9 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		defer transaction.Finish()
 
 		// TODO: Perhaps makes sense to use SetRequestBody instead?
-		// Add the request to the scope
+		// AddHook the request to the scope
 		hub.Scope().SetExtra("requestBody", req)
-		// Add the tags from grpc request metadata
+		// AddHook the tags from grpc request metadata
 		tags := grpc_ctxtags.Extract(ctx)
 		for k, v := range tags.Values() {
 			hub.Scope().SetTag(k, v.(string))
@@ -51,7 +51,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 			hub.CaptureException(err)
 		}
 
-		// Add the response status to the scope
+		// AddHook the response status to the scope
 		transaction.Status = ToSpanStatus(status.Code(err))
 
 		return resp, err
@@ -67,7 +67,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 
 		ctx := ss.Context()
 
-		// Add a sentry hub to the request context
+		// AddHook a sentry hub to the request context
 		hub := sentry.GetHubFromContext(ctx)
 		if hub == nil {
 			log.Ctx(ctx).Warn().Msg("No sentry hub found in context")
@@ -92,7 +92,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		wrapped.WrappedContext = ctx
 		ss = wrapped
 
-		// Add the tags from grpc request metadata
+		// AddHook the tags from grpc request metadata
 		tags := grpc_ctxtags.Extract(ctx)
 		for k, v := range tags.Values() {
 			hub.Scope().SetTag(k, v.(string))
@@ -103,7 +103,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 			hub.CaptureException(err)
 		}
 
-		// Add the response status to the scope
+		// AddHook the response status to the scope
 		transaction.Status = ToSpanStatus(status.Code(err))
 
 		return err

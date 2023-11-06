@@ -36,15 +36,15 @@ func WithNamedServer(name string, opts ...ServerOption) application.Option {
 	// Create the server options with the defaults
 	options := newServerOptions(opts...)
 
-	return func(app application.App, hooks *application.Hooks) {
+	return func(app application.App) {
 		// Inject the server container into the application
 		injector.InjectNamed(app.Injector, name, server{
 			options: options,
 			router:  httprouter.New(),
 		})
 
-		// Add a startup hook
-		hooks.AddStartup(func(ctx context.Context, app application.App) error {
+		// AddHook a startup hook
+		app.AddStartupHook(func(ctx context.Context, app application.App) error {
 			// Get the server container
 			srv, err := injector.GetNamed[server](app.Injector, name)
 			if err != nil {
@@ -53,7 +53,7 @@ func WithNamedServer(name string, opts ...ServerOption) application.Option {
 
 			// Wrap the router with the middlewares
 			handler := srv.options.wrapMiddleware(srv.router)
-			handler = newBaseMiddleware(handler, app, hooks)
+			handler = newBaseMiddleware(handler, app)
 
 			// Create the server
 			srv.server = &http.Server{Addr: srv.options.addr(), Handler: handler}
@@ -66,8 +66,8 @@ func WithNamedServer(name string, opts ...ServerOption) application.Option {
 			return err
 		})
 
-		// Add a shutdown hook
-		hooks.AddShutdown(func(ctx context.Context, app application.App) error {
+		// AddHook a shutdown hook
+		app.AddShutdownHook(func(ctx context.Context, app application.App) error {
 			// Get the server container
 			srv, err := injector.GetNamed[server](app.Injector, name)
 			if err != nil {

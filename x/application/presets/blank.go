@@ -13,7 +13,7 @@ import (
 
 // NewBlankApp creates a new application with the following extensions:
 // - vcs.WithBuildInfo
-// - config.WithSettings
+// - config.WithConfiguration
 // - sentry.WithDefaultSentry
 // - monitor.WithDefaultMonitor
 // - logging.WithZerolog
@@ -23,7 +23,7 @@ func NewBlankApp(name string, opts ...application.Option) application.App {
 	return application.New(pack(
 		[]application.Option{
 			vcs.WithBuildInfo(name),
-			config.WithSettings(),
+			config.WithConfiguration(),
 			sentry.WithDefaultSentry(),
 			monitor.WithMonitor(
 				monitor.FromConfig(),

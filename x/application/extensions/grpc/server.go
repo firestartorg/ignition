@@ -23,24 +23,24 @@ type server struct {
 
 // WithServerPort sets the server
 func WithServerPort(port int16, opts ...grpc.ServerOption) application.Option {
-	return func(app application.App, hooks *application.Hooks) {
+	return func(app application.App) {
 		// Pack the server options
 		opts = packServer(
 			[]grpc.ServerOption{
-				grpc.ChainUnaryInterceptor(UnaryServerInterceptor(app, hooks)),
-				grpc.ChainStreamInterceptor(StreamServerInterceptor(app, hooks)),
+				grpc.ChainUnaryInterceptor(UnaryServerInterceptor(app)),
+				grpc.ChainStreamInterceptor(StreamServerInterceptor(app)),
 			},
 			opts)
 		// Create the server
 		srv := grpc.NewServer(opts...)
 
-		// Add the server to the application
+		// AddHook the server to the application
 		injector.InjectNamed(app.Injector, ServerName, server{
 			server: srv,
 		})
 
-		// Add the startup hook
-		hooks.AddStartup(func(ctx context.Context, app application.App) error {
+		// AddHook the startup hook
+		app.AddStartupHook(func(ctx context.Context, app application.App) error {
 			//fmt.Println("Starting gRPC server")
 
 			// Start the server
@@ -51,8 +51,8 @@ func WithServerPort(port int16, opts ...grpc.ServerOption) application.Option {
 			return srv.Serve(listen)
 		})
 
-		// Add the shutdown hook
-		hooks.AddShutdown(func(ctx context.Context, app application.App) error {
+		// AddHook the shutdown hook
+		app.AddShutdownHook(func(ctx context.Context, app application.App) error {
 			// Stop the server
 			srv.GracefulStop()
 

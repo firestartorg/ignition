@@ -16,7 +16,7 @@ import (
 func WithRpcClientFactory() application.Option {
 	opts := []logging.Option{
 		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
-		// Add any other option (check functions starting with logging.With).
+		// AddHook any other option (check functions starting with logging.With).
 	}
 
 	return grpc.WithClientFactory(
@@ -36,7 +36,7 @@ func WithRpcClientFactory() application.Option {
 func WithRpcServer(port int16) application.Option {
 	opts := []logging.Option{
 		logging.WithLogOnEvents(logging.StartCall, logging.FinishCall),
-		// Add any other option (check functions starting with logging.With).
+		// AddHook any other option (check functions starting with logging.With).
 	}
 
 	return grpc.WithServerPort(

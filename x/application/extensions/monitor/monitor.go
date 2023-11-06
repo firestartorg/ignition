@@ -22,7 +22,7 @@ var (
 
 // WithMonitor adds a health monitor to the application.
 func WithMonitor(opts ...Option) application.Option {
-	return func(app application.App, hooks *application.Hooks) {
+	return func(app application.App) {
 		// Apply the options
 		options := newOptions(opts...)
 		// Check if the config should be used
@@ -42,15 +42,15 @@ func WithMonitor(opts ...Option) application.Option {
 		}
 		// Add the readiness monitor
 		if options.readiness {
-			router.GET("/health/ready", readinessProbeHandle(app, hooks, options))
+			router.GET("/health/ready", readinessProbeHandle(app, options))
 		}
 		// Add the liveness monitor
 		if options.liveness {
-			router.GET("/health/live", livenessProbeHandle(app, hooks, options))
+			router.GET("/health/live", livenessProbeHandle(app, options))
 		}
 
 		// Add a startup hook
-		hooks.AddStartup(func(ctx context.Context, app application.App) error {
+		app.AddStartupHook(func(ctx context.Context, app application.App) error {
 			// Start the server
 			err := http.ListenAndServe(fmt.Sprintf(":%d", options.port), router)
 			// Check if the error is a "port already in use" error
@@ -75,16 +75,16 @@ func WithMonitor(opts ...Option) application.Option {
 		})
 
 		//// Add a shutdown hook
-		//hooks.AddShutdown(func(ctx context.Context, app application.App) error {
+		//hooks.AddShutdownHook(func(ctx context.Context, app application.App) error {
 		//	return (*listener).Close()
 		//})
 	}
 }
 
-func readinessProbeHandle(app application.App, hooks *application.Hooks, options Options) httprouter.Handle {
+func readinessProbeHandle(app application.App, options Options) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		ok := getStatus(context.Background(), app, hooks, HookHealth, options) &&
-			getStatus(context.Background(), app, hooks, HookReadiness, options)
+		ok := getStatus(context.Background(), app, HookHealth, options) &&
+			getStatus(context.Background(), app, HookReadiness, options)
 
 		if !ok {
 			http.Error(w, "Unavailable", http.StatusServiceUnavailable)
@@ -94,10 +94,10 @@ func readinessProbeHandle(app application.App, hooks *application.Hooks, options
 	}
 }
 
-func livenessProbeHandle(app application.App, hooks *application.Hooks, options Options) httprouter.Handle {
+func livenessProbeHandle(app application.App, options Options) httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		ok := getStatus(context.Background(), app, hooks, HookHealth, options) &&
-			getStatus(context.Background(), app, hooks, HookLiveness, options)
+		ok := getStatus(context.Background(), app, HookHealth, options) &&
+			getStatus(context.Background(), app, HookLiveness, options)
 
 		if !ok {
 			http.Error(w, "Unavailable", http.StatusServiceUnavailable)
@@ -108,12 +108,12 @@ func livenessProbeHandle(app application.App, hooks *application.Hooks, options 
 }
 
 // getStatus returns the status of the given health hook
-func getStatus(ctx context.Context, app application.App, hooks *application.Hooks, hook application.Hook, options Options) bool {
+func getStatus(ctx context.Context, app application.App, hook application.Hook, options Options) bool {
 	pctx, cancel := context.WithTimeout(ctx, options.timeout)
 	defer cancel()
 
 	// Check all the hooks
-	err := hooks.RunWithContext(hook, app, pctx)
+	err := app.Hooks.RunWithContext(hook, app, pctx)
 	if err != nil {
 		return false
 	}

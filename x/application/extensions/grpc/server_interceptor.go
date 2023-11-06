@@ -9,7 +9,7 @@ import (
 )
 
 // UnaryServerInterceptor is a grpc server interceptor that processes the request context
-func UnaryServerInterceptor(app application.App, hooks *application.Hooks) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(app application.App) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
 		req any,
@@ -18,7 +18,7 @@ func UnaryServerInterceptor(app application.App, hooks *application.Hooks) grpc.
 	) (any, error) {
 		var err error
 		// Process the request context
-		ctx, err = hooks.ProcessContext(application.HookRequest, ctx, app)
+		ctx, err = app.Hooks.ProcessContext(application.HookRequest, ctx, app)
 		if err != nil {
 			log.Ctx(ctx).Error().Err(err).Msg("Failed to process request context")
 		}
@@ -28,7 +28,7 @@ func UnaryServerInterceptor(app application.App, hooks *application.Hooks) grpc.
 }
 
 // StreamServerInterceptor is a grpc server interceptor that processes the request context
-func StreamServerInterceptor(app application.App, hooks *application.Hooks) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(app application.App) grpc.StreamServerInterceptor {
 	return func(
 		srv any,
 		stream grpc.ServerStream,
@@ -37,7 +37,7 @@ func StreamServerInterceptor(app application.App, hooks *application.Hooks) grpc
 	) error {
 		var err error
 		// Process the request context
-		ctx, err := hooks.ProcessContext(application.HookRequest, stream.Context(), app)
+		ctx, err := app.Hooks.ProcessContext(application.HookRequest, stream.Context(), app)
 		if err != nil {
 			log.Ctx(ctx).Error().Err(err).Msg("Failed to process request context")
 		} else {

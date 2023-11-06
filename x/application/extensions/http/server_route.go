@@ -15,7 +15,7 @@ func AddNamedRoute(app application.App, serverName string, method string, path s
 		return err
 	}
 
-	// Add the route
+	// AddHook the route
 	srv.router.Handle(method, path, handle)
 
 	return nil

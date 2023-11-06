@@ -32,11 +32,11 @@ type appGlobals struct {
 
 // WithVersion sets the application version
 func WithVersion(name, version string) application.Option {
-	return func(app application.App, hooks *application.Hooks) {
+	return func(app application.App) {
 		// Inject app globals
 		injector.InjectNamed(app.Injector, AppName, appGlobals{name, version})
 
-		// Add the following metric
+		// AddHook the following metric
 		AppVersion.WithLabelValues(name, version, runtime.Version()).Set(1)
 	}
 }
@@ -45,21 +45,21 @@ type HealthCheckFunc = application.HookFunc
 
 // WithHealthCheck adds a health check to the application.
 func WithHealthCheck(f HealthCheckFunc) application.Option {
-	return func(app application.App, hooks *application.Hooks) {
-		hooks.Add(monitor.HookHealth, f)
+	return func(app application.App) {
+		app.AddHook(monitor.HookHealth, f)
 	}
 }
 
-// WithAppReadinessCheck adds a readiness check to the application.
+// WithReadinessCheck adds a readiness check to the application.
 func WithReadinessCheck(f HealthCheckFunc) application.Option {
-	return func(app application.App, hooks *application.Hooks) {
-		hooks.Add(monitor.HookReadiness, f)
+	return func(app application.App) {
+		app.AddHook(monitor.HookReadiness, f)
 	}
 }
 
-// WithAppLivenessCheck adds a liveness check to the application.
+// WithLivenessCheck adds a liveness check to the application.
 func WithLivenessCheck(f HealthCheckFunc) application.Option {
-	return func(app application.App, hooks *application.Hooks) {
-		hooks.Add(monitor.HookLiveness, f)
+	return func(app application.App) {
+		app.AddHook(monitor.HookLiveness, f)
 	}
 }

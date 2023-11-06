@@ -33,7 +33,7 @@ type clientFactory struct {
 //   - automatically monitors all clients
 //   - automatically closes all clients
 func WithClientFactory(opts ...grpc.DialOption) application.Option {
-	return func(app application.App, hooks *application.Hooks) {
+	return func(app application.App) {
 		// Create the client factory
 		factory := &clientFactory{clients: make([]*grpc.ClientConn, 0), clientsMutex: sync.RWMutex{}}
 		factory.new = func(target string) (*grpc.ClientConn, error) {
@@ -54,7 +54,7 @@ func WithClientFactory(opts ...grpc.DialOption) application.Option {
 		injector.InjectNamed(app.Injector, ClientFactoryName, factory)
 
 		// Add the shutdown hook
-		hooks.AddShutdown(func(ctx context.Context, app application.App) error {
+		app.AddShutdownHook(func(ctx context.Context, app application.App) error {
 			// Close all the clients
 			factory.clientsMutex.Lock()
 			defer factory.clientsMutex.Unlock()
@@ -73,7 +73,7 @@ func WithClientFactory(opts ...grpc.DialOption) application.Option {
 		})
 
 		// Add health check hook
-		hooks.Add(monitor.HookReadiness, func(ctx context.Context, app application.App) error {
+		app.AddHook(monitor.HookReadiness, func(ctx context.Context, app application.App) error {
 			// Check all the clients
 			factory.clientsMutex.RLock()
 			defer factory.clientsMutex.RUnlock()

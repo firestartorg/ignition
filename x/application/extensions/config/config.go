@@ -6,9 +6,9 @@ import (
 	"gitlab.com/firestart/ignition/x/application"
 )
 
-// WithSettings sets the settings
-func WithSettings() application.Option {
-	return func(app application.App, hooks *application.Hooks) {
+// WithConfiguration sets the settings
+func WithConfiguration() application.Option {
+	return func(app application.App) {
 		dyn, err := config.LoadConfig()
 		if err != nil {
 			panic(err)

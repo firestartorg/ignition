@@ -10,7 +10,7 @@ import (
 type Middleware = func(handler http.Handler) http.Handler
 
 // newBaseMiddleware creates a new the default middleware for the server
-func newBaseMiddleware(handler http.Handler, app application.App, hooks *application.Hooks) http.Handler {
+func newBaseMiddleware(handler http.Handler, app application.App) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Server", "Ignition")
 
@@ -18,14 +18,14 @@ func newBaseMiddleware(handler http.Handler, app application.App, hooks *applica
 		ctx := r.Context()
 
 		// If there are no hooks, just serve the request
-		if hooks == nil {
+		if app.Hooks == nil {
 			handler.ServeHTTP(w, r)
 			return
 		}
 
 		var err error
 		// Process the request context
-		ctx, err = hooks.ProcessContext(application.HookRequest, ctx, app)
+		ctx, err = app.Hooks.ProcessContext(application.HookRequest, ctx, app)
 		if err != nil {
 			log.Ctx(ctx).Error().Err(err).Msg("Failed to process request context")
 			return

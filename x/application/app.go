@@ -1,7 +1,6 @@
 package application
 
 import (
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"os"
@@ -9,16 +8,13 @@ import (
 	"syscall"
 )
 
-type Option = func(app App, hooks *Hooks)
+type Option = func(app App)
 
 type App struct {
 	// Injector is the injector used by the application
 	*injector.Injector
-
-	// logger is the logger used by the application
-	logger zerolog.Logger
-	// hooks is the hooks used by the application
-	hooks *Hooks
+	// Hooks is the hooks used by the application
+	*Hooks
 }
 
 // New creates a new App
@@ -26,14 +22,13 @@ func New(opts ...Option) App {
 	// Create the application
 	app := App{
 		Injector: injector.NewInjector(),
-		hooks:    newHooks(),
-
-		logger: log.With().Timestamp().Logger(),
+		Hooks:    newHooks(),
+		//logger: log.With().Timestamp().Logger(),
 	}
 
 	// Apply the options
 	for _, opt := range opts {
-		opt(app, app.hooks)
+		opt(app)
 	}
 
 	return app
@@ -44,7 +39,7 @@ func (a App) Shutdown() {
 	log.Info().Msg("Shutting down application")
 
 	// Run the shutdown hooks
-	err := a.hooks.shutdown(a)
+	err := a.Hooks.shutdown(a)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to run shutdown hooks")
 		return
@@ -68,7 +63,7 @@ func (a App) Run() {
 	done := make(chan struct{})
 	go func() {
 		// Run the startup hooks
-		err := a.hooks.waitUntil(HookStartup, a)
+		err := a.Hooks.waitUntil(HookStartup, a)
 		if err != nil {
 			log.Fatal().Err(err).Msg("Failed to run startup hooks")
 		}

@@ -21,7 +21,7 @@ var (
 
 // WithBuildInfo set the application build info (version and go version) metric
 func WithBuildInfo(name string) application.Option {
-	return func(app application.App, hooks *application.Hooks) {
+	return func(app application.App) {
 		info, ok := debug.ReadBuildInfo()
 		if !ok {
 			log.Info().Msg("No build info found")
@@ -29,7 +29,7 @@ func WithBuildInfo(name string) application.Option {
 
 		revision, ok := findSetting(info.Settings, "vcs.revision")
 		if !ok {
-			// Add the following metric
+			// AddHook the following metric
 			BuildInfo.WithLabelValues(name, "dev", info.GoVersion).Set(1)
 			return
 		}

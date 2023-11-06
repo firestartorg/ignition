@@ -28,7 +28,7 @@ func main() {
 		apps.WithHealthCheck(func(ctx context.Context, app application.App) error {
 			return nil
 		}),
-		config.WithSettings(),
+		config.WithConfiguration(),
 		monitor.WithMonitor(
 			monitor.FromConfig(),
 			monitor.WithPrometheusMetrics(),

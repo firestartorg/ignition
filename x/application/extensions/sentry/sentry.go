@@ -13,7 +13,7 @@ import (
 func WithSentry(opts ...Option) application.Option {
 	s := newSettings(opts...)
 
-	return func(app application.App, hooks *application.Hooks) {
+	return func(app application.App) {
 		// If the config flag is set, extract the config from the injector
 		if s.config {
 			var err error
@@ -45,8 +45,8 @@ func WithSentry(opts ...Option) application.Option {
 			log.Fatal().Err(err).Msg("Failed to initialize sentry")
 		}
 
-		// Add a sentry hub to the application context for each request
-		hooks.AddContext(application.HookRequest, func(ctx context.Context, app application.App) (context.Context, error) {
+		// AddHook a sentry hub to the application context for each request
+		app.AddContextProcessor(application.HookRequest, func(ctx context.Context, app application.App) (context.Context, error) {
 			hub := sentry.GetHubFromContext(ctx)
 			if hub == nil {
 				hub = sentry.CurrentHub().Clone()
@@ -56,8 +56,8 @@ func WithSentry(opts ...Option) application.Option {
 			return ctx, nil
 		})
 
-		// Add a shutdown hook to flush sentry events
-		hooks.AddShutdown(func(ctx context.Context, app application.App) error {
+		// AddHook a shutdown hook to flush sentry events
+		app.AddShutdownHook(func(ctx context.Context, app application.App) error {
 			// Flush buffered events before the program terminates.
 			// Set the timeout to the maximum duration the program can afford to wait.
 			sentry.Flush(time.Duration(s.FlushTimeout) * time.Second)

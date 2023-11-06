@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"github.com/rs/zerolog/log"
 	"sync"
 )
 
@@ -45,8 +46,8 @@ func newHooks() *Hooks {
 	}
 }
 
-// Add adds a hook to the application
-func (h *Hooks) Add(hook Hook, f HookFunc) {
+// AddHook adds a hook to the application
+func (h *Hooks) AddHook(hook Hook, f HookFunc) {
 	h.hooksMutex.Lock()
 	defer h.hooksMutex.Unlock()
 
@@ -58,18 +59,18 @@ func (h *Hooks) Add(hook Hook, f HookFunc) {
 	h.hooks[hook] = append(h.hooks[hook], f)
 }
 
-// AddStartup adds a startup hook to the application
-func (h *Hooks) AddStartup(f HookFunc) {
-	h.Add(HookStartup, f)
+// AddStartupHook adds a startup hook to the application
+func (h *Hooks) AddStartupHook(f HookFunc) {
+	h.AddHook(HookStartup, f)
 }
 
-// AddShutdown adds a shutdown hook to the application
-func (h *Hooks) AddShutdown(f HookFunc) {
-	h.Add(HookShutdown, f)
+// AddShutdownHook adds a shutdown hook to the application
+func (h *Hooks) AddShutdownHook(f HookFunc) {
+	h.AddHook(HookShutdown, f)
 }
 
-// AddContext adds a context hook to the application
-func (h *Hooks) AddContext(hook Hook, f ContextHookFunc) {
+// AddContextProcessor adds a context hook to the application
+func (h *Hooks) AddContextProcessor(hook Hook, f ContextHookFunc) {
 	h.contextHooksMutex.Lock()
 	defer h.contextHooksMutex.Unlock()
 
@@ -169,7 +170,7 @@ func (h *Hooks) waitUntil(hook Hook, app App) error {
 
 	// Create a wait group
 	var wg sync.WaitGroup
-	// Add the number of hooks to the wait group
+	// AddHook the number of hooks to the wait group
 	wg.Add(len(fs))
 
 	for _, f := range fs {
@@ -178,7 +179,7 @@ func (h *Hooks) waitUntil(hook Hook, app App) error {
 
 			err := f(ctx, app)
 			if err != nil {
-				app.logger.Error().Err(err).Msg("Hook failed")
+				log.Ctx(ctx).Error().Err(err).Msg("Hook failed")
 				panic(err)
 			}
 		}(f)

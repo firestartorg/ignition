@@ -27,13 +27,13 @@ type client struct {
 
 // WithMongoClient adds a mongo client to the application.
 func WithMongoClient(opts ...Option) application.Option {
-	return func(app application.App, hooks *application.Hooks) {
+	return func(app application.App) {
 		// Create the settings
 		s := newSettings(opts...)
 		// Add provide the client
 		injector.ProvideNamed(app.Injector, Name, provideFactory(s))
 
-		hooks.AddShutdown(func(ctx context.Context, app application.App) error {
+		app.AddShutdownHook(func(ctx context.Context, app application.App) error {
 			cl, err := injector.GetNamed[client](app.Injector, Name)
 			if err != nil {
 				return err
@@ -47,7 +47,7 @@ func WithMongoClient(opts ...Option) application.Option {
 			return nil
 		})
 
-		hooks.Add(monitor.HookReadiness, func(ctx context.Context, app application.App) error {
+		app.AddHook(monitor.HookReadiness, func(ctx context.Context, app application.App) error {
 			cl, err := injector.GetNamed[client](app.Injector, Name)
 			if err != nil {
 				return err
