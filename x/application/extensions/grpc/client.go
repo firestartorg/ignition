@@ -79,8 +79,8 @@ func WithClientFactory(opts ...grpc.DialOption) application.Option {
 			defer factory.clientsMutex.RUnlock()
 
 			for _, client := range factory.clients {
-				if client.GetState() != connectivity.Ready {
-					log.Ctx(ctx).Error().Str("target", client.Target()).Msg("grpc client is not ready")
+				if client.GetState() == connectivity.TransientFailure {
+					log.Ctx(ctx).Error().Str("target", client.Target()).Msg("grpc client has failed")
 					return monitor.ErrNotReady
 				}
 			}
