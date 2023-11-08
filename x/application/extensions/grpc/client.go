@@ -8,6 +8,7 @@ import (
 	"gitlab.com/firestart/ignition/x/application/extensions/monitor"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
+	"os"
 	"sync"
 )
 
@@ -71,6 +72,12 @@ func WithClientFactory(opts ...grpc.DialOption) application.Option {
 			}
 			return nil
 		})
+
+		// Check if health check is disabled
+		value, ok := os.LookupEnv("IGNITION_GRPC_DISABLE_HEALTH_CHECK")
+		if ok && value == "true" {
+			return
+		}
 
 		// Add health check hook
 		app.AddHook(monitor.HookReadiness, func(ctx context.Context, app application.App) error {
