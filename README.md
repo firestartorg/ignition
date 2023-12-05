@@ -5,6 +5,7 @@ Utility library for FireStart [go-lang](https://go.dev/) projects.
 ## Installation
 
 ```bash
+export GOPRIVATE=gitlab.com/firestart/*
 go get gitlab.com/firestart/ignition
 ```
 

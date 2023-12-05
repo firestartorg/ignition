@@ -25,8 +25,7 @@ func LoadEnviron(prefix string) (cfg *Config, err error) {
 		}
 
 		// Replace double underscore with colon in key
-		//key := formatEnvironmentKey(parts[0])
-		key := strings.ReplaceAll(parts[0], "__", ":")
+		key := formatEnvironmentKey(parts[0])
 		val := parts[1]
 
 		cfg.fields[key] = val
@@ -35,21 +34,12 @@ func LoadEnviron(prefix string) (cfg *Config, err error) {
 	return cfg, nil
 }
 
-//func toTitleCase(str string) string {
-//	str = strings.ToLower(strings.TrimSpace(str))
-//	parts := strings.Split(str, "_")
-//	for i, part := range parts {
-//		parts[i] = strings.Title(part)
-//	}
-//	return strings.Join(parts, "")
-//}
-//
-//func formatEnvironmentKey(key string) string {
-//	parts := strings.Split(key, "__")
-//
-//	for i, part := range parts {
-//		parts[i] = toTitleCase(part)
-//	}
-//
-//	return strings.Join(parts, ":")
-//}
+func formatEnvironmentKey(key string) string {
+	parts := strings.Split(key, "__")
+
+	for i, part := range parts {
+		parts[i] = fixName(part, true)
+	}
+
+	return strings.Join(parts, ":")
+}

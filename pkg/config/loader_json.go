@@ -49,7 +49,7 @@ func loadFromJson(path string) (cfg *Config, err error) {
 
 func unpackGeneric(jsonObj map[string]interface{}, keySpace *string, cap bool, config *Config) error {
 	for key, val := range jsonObj {
-		key = unpackFixName(key, cap)
+		key = fixName(key, cap)
 		// Check if key is a nested object
 		if keySpace != nil {
 			key = *keySpace + ":" + key
@@ -89,7 +89,7 @@ func unpackGeneric(jsonObj map[string]interface{}, keySpace *string, cap bool, c
 
 var re = regexp.MustCompile("[-_]+")
 
-func unpackFixName(name string, cap bool) string {
+func fixName(name string, cap bool) string {
 	if cap {
 		parts := re.Split(name, -1)
 		for i, p := range parts {
