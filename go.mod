@@ -11,7 +11,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/rs/zerolog v1.31.0
 	go.mongodb.org/mongo-driver v1.12.1
-	google.golang.org/grpc v1.58.2
+	google.golang.org/grpc v1.58.3
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v3 v3.0.1
 )
