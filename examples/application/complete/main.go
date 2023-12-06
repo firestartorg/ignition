@@ -6,7 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	pb2 "gitlab.com/firestart/ignition/examples/application/bare/pb"
+	pb2 "gitlab.com/firestart/ignition/examples/application/complete/pb"
 	"gitlab.com/firestart/ignition/x/application"
 	"gitlab.com/firestart/ignition/x/application/extensions/apps"
 	"gitlab.com/firestart/ignition/x/application/extensions/config"
