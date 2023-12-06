@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/zerolog/log"
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/x/application"
 	"net/http"
@@ -58,6 +59,11 @@ func WithNamedServer(name string, opts ...ServerOption) application.Option {
 			// Create the server
 			srv.server = &http.Server{Addr: srv.options.addr(), Handler: handler}
 			injector.InjectNamed(app.Injector, name, srv) // Update the server container
+
+			log.Info().
+				Str("address", srv.options.addr()).
+				Int16("port", srv.options.port).
+				Msg("Starting HTTP server")
 
 			err = srv.server.ListenAndServe()
 			if errors.Is(err, http.ErrServerClosed) {

@@ -6,7 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"gitlab.com/firestart/ignition/examples/application/pb"
+	pb2 "gitlab.com/firestart/ignition/examples/application/complete/pb"
 	"gitlab.com/firestart/ignition/x/application"
 	"gitlab.com/firestart/ignition/x/application/extensions/apps"
 	"gitlab.com/firestart/ignition/x/application/extensions/config"
@@ -82,30 +82,30 @@ func main() {
 }
 
 type Greeter struct {
-	client pb.GreeterClient
+	client pb2.GreeterClient
 }
 
-func (g Greeter) Panic(ctx context.Context, request *pb.HelloRequest) (*pb.HelloReply, error) {
+func (g Greeter) Panic(ctx context.Context, request *pb2.HelloRequest) (*pb2.HelloReply, error) {
 	panic(request.Name)
 }
 
-func (g Greeter) SayHello(ctx context.Context, request *pb.HelloRequest) (*pb.HelloReply, error) {
+func (g Greeter) SayHello(ctx context.Context, request *pb2.HelloRequest) (*pb2.HelloReply, error) {
 	log.Ctx(ctx).Info().Msgf("Received: %s", request.Name)
 
-	_, err := g.client.Panic(ctx, &pb.HelloRequest{Name: "Panic!"})
+	_, err := g.client.Panic(ctx, &pb2.HelloRequest{Name: "Panic!"})
 	if err != nil {
 		return nil, err
 	}
 
-	return &pb.HelloReply{Message: "Hello " + request.Name}, nil
+	return &pb2.HelloReply{Message: "Hello " + request.Name}, nil
 }
 
-var _ pb.GreeterServer = (*Greeter)(nil)
+var _ pb2.GreeterServer = (*Greeter)(nil)
 
 func ProvideGreeterService(app application.App) {
 	srv := Greeter{
-		client: grpc.MustNewClient(app.Injector, "localhost:5000", pb.NewGreeterClient),
+		client: grpc.MustNewClient(app.Injector, "localhost:5000", pb2.NewGreeterClient),
 	}
-	grpc.MustAddService(app, pb.Greeter_ServiceDesc, srv)
+	grpc.MustAddService(app, pb2.Greeter_ServiceDesc, srv)
 	return
 }

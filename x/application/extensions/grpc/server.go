@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/x/application"
 	"google.golang.org/grpc"
@@ -42,6 +43,10 @@ func WithServerPort(port int16, opts ...grpc.ServerOption) application.Option {
 		// AddHook the startup hook
 		app.AddStartupHook(func(ctx context.Context, app application.App) error {
 			//fmt.Println("Starting gRPC server")
+
+			log.Ctx(ctx).Info().
+				Int16("port", port).
+				Msg("Starting gRPC server")
 
 			// Start the server
 			listen, err := net.Listen("tcp", fmt.Sprint(":", port))
