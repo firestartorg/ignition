@@ -50,7 +50,7 @@ func (i *Injector) get(name string, named bool) (any, error) {
 		injectable, ok = i.injectables[name]
 	}
 	if !ok {
-		return nil, ErrUnknownInjectable
+		return nil, &Error{Type: ErrTypeInjectableNotFound, Descriptor: name}
 	}
 
 	return injectable, nil

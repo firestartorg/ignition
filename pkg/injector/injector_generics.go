@@ -57,7 +57,7 @@ func get[T any](injector *Injector, name string, named bool) (T, error) {
 
 	injable, ok := injableAny.(Injectable[T])
 	if !ok {
-		return value, ErrUnknownInjectable
+		return value, &Error{Type: ErrTypeInjectableNotFound, Descriptor: name}
 	}
 
 	return injable.get(injector)
