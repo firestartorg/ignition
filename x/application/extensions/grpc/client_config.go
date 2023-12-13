@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"errors"
 	"fmt"
 	"gitlab.com/firestart/ignition/pkg/injector"
 )
@@ -12,16 +13,23 @@ import (
 //	  client:
 //	    <name>:
 //	      host: <host>
-func NewConfiguredClient[T interface{}](inj *injector.Injector, name string, f NewClientFunc[T]) (T, error) {
+func NewConfiguredClient[T interface{}](inj *injector.Injector, name string, f NewClientFunc[T]) (client T, err error) {
 	// Get configuration for the client
-	conf, err := injector.ExtractConfig[clientConfig](inj, fmt.Sprint("Grpc:Client:", name))
+	var conf clientConfig
+	conf, err = injector.ExtractConfig[clientConfig](inj, fmt.Sprint("Grpc:Client:", name))
 	if err != nil {
-		var zero T
-		return zero, err
+		return
 	}
 
 	// Create the client
-	return NewClient(inj, conf.Host, f)
+	client, err = NewClient(inj, conf.Host, f)
+	if err != nil {
+		if errors.Is(err, ErrTargetRequired) {
+			err = errors.Join(err, fmt.Errorf("grpc client '%s' host is required", name))
+		}
+		return
+	}
+	return
 }
 
 // MustNewConfiguredClient creates a new client and panics if there is an error

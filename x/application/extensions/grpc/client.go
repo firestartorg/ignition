@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"github.com/rs/zerolog/log"
 	"gitlab.com/firestart/ignition/pkg/injector"
 	"gitlab.com/firestart/ignition/x/application"
@@ -15,6 +16,9 @@ import (
 var (
 	// ClientFactoryName is the name of the injectable that contains the client clientFactory
 	ClientFactoryName = "ignition/grpc-client-clientFactory"
+
+	// ErrTargetRequired is returned when a target is not provided
+	ErrTargetRequired = errors.New("target is required")
 )
 
 // clientFactory is a container for the client clientFactory
@@ -98,6 +102,10 @@ func WithClientFactory(opts ...grpc.DialOption) application.Option {
 
 // NewClientConnection creates a new client
 func NewClientConnection(inj *injector.Injector, target string) (*grpc.ClientConn, error) {
+	if target == "" {
+		return nil, ErrTargetRequired
+	}
+
 	// Get the client clientFactory
 	f, err := injector.GetNamed[*clientFactory](inj, ClientFactoryName)
 	if err != nil {
