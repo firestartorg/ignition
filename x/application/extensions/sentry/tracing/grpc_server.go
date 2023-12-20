@@ -47,7 +47,7 @@ func UnaryServerInterceptor() grpc.UnaryServerInterceptor {
 		}
 
 		resp, err := handler(ctx, req)
-		if err != nil {
+		if err != nil && !IsGrpcError(err) {
 			hub.CaptureException(err)
 		}
 
@@ -99,7 +99,7 @@ func StreamServerInterceptor() grpc.StreamServerInterceptor {
 		}
 
 		err := handler(ctx, ss)
-		if err != nil {
+		if err != nil && !IsGrpcError(err) {
 			hub.CaptureException(err)
 		}
 

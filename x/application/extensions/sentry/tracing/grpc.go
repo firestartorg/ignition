@@ -5,6 +5,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 )
 
 func ContinueFromRpcRequest(ctx context.Context) sentry.SpanOption {
@@ -66,4 +67,9 @@ func ToSpanStatus(code codes.Code) sentry.SpanStatus {
 	default:
 		return sentry.SpanStatusUndefined
 	}
+}
+
+func IsGrpcError(err error) bool {
+	_, ok := status.FromError(err)
+	return ok
 }

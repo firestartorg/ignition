@@ -28,7 +28,7 @@ func UnaryClientInterceptor() grpc.UnaryClientInterceptor {
 		ctx = getSpanContext(span)
 
 		err := invoker(ctx, method, req, reply, cc, callOpts...)
-		if err != nil {
+		if err != nil && !IsGrpcError(err) {
 			hub := sentry.GetHubFromContext(ctx)
 			if hub != nil {
 				hub.CaptureException(err)
@@ -63,7 +63,7 @@ func StreamClientInterceptor() grpc.StreamClientInterceptor {
 		ctx = getSpanContext(span)
 
 		stream, err := streamer(ctx, desc, cc, method, callOpts...)
-		if err != nil {
+		if err != nil && !IsGrpcError(err) {
 			hub := sentry.GetHubFromContext(ctx)
 			if hub != nil {
 				hub.CaptureException(err)
