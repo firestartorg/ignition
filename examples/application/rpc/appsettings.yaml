@@ -1,0 +1,21 @@
+# Application configuration
+app:
+  port: 5000 # The port the application will listen on. Default is 5000
+
+  # Logging configuration for the application
+  logging:
+    level: debug
+
+  monitor:
+    port: 8080 # The port the monitor will listen on. Default is 8080
+    # if set to auto, it will automatically find a free port if 8080 is not available
+
+sentry:
+  enabled: true # Default is false
+  dsn: "https://912642dbd878f3999a37d9d42937a5ec@o4505345231945728.ingest.sentry.io/4505992844804096"
+  environment: local
+  release: 0.0.1
+
+  # Trace configuration for the application
+  enable_tracing: true
+  traces_sample_rate: 1.0
