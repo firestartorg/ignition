@@ -1,3 +1,5 @@
+![gpc](https://img.shields.io/badge/Configured%20by-GPC-green.svg)
+
 # Ignition
 
 Utility library for FireStart [go-lang](https://go.dev/) projects.
