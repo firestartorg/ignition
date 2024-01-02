@@ -111,6 +111,8 @@ func main() {
 }
 ```
 
+For more information on grpc servers and clients, see the [grpc](extensions/grpc/README.md) extension.
+
 ### Http Preset
 
 The http preset is the blank preset with the http extension.
@@ -130,3 +132,5 @@ func main() {
   app.Run()
 }
 ```
+
+For more information on http servers, see the [http](extensions/http/README.md) extension.
