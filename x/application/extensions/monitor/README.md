@@ -76,3 +76,8 @@ func main() {
   app.Run()
 }
 ```
+
+Some extensions automatically add health checks:
+
+- [gRPC](../grpc/README.md): adds a health check for the gRPC server and clients
+- mongo: adds a health check for the mongo client
