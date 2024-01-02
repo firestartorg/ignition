@@ -67,7 +67,7 @@ Presets are a collection of extensions that can be used to quickly add functiona
 
 - [blank](#blank-preset) - Base application with vcs, config, logger, sentry, monitor, and apps extensions
 - [grpc](#grpc-preset) - Blank application with grpc extension (optional client)
-- http - Blank application with http extension
+- [http](#http-preset) - Blank application with http extension
 
 ### Blank Preset
 
