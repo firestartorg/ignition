@@ -65,6 +65,68 @@ For more information on presets, see the [presets](#presets) section.
 
 Presets are a collection of extensions that can be used to quickly add functionality to your application.
 
-- blank - Base application with vcs, config, logger, sentry, monitor, and apps extensions
-- grpc - Blank application with grpc extension (optional client)
+- [blank](#blank-preset) - Base application with vcs, config, logger, sentry, monitor, and apps extensions
+- [grpc](#grpc-preset) - Blank application with grpc extension (optional client)
 - http - Blank application with http extension
+
+### Blank Preset
+
+The blank preset is the base application with a number of extensions. It is the default preset.
+
+```go
+package main
+
+import (
+  "gitlab.com/firestart/ignition/x/application/presets"
+)
+
+func main() {
+  app := presets.NewBlankApp(
+    "example-blank-app", // The name of the application
+    // Add additional extensions here, if needed
+  )
+  app.Run()
+}
+```
+
+### Grpc Preset
+
+The grpc preset is the blank preset with the grpc extension. It also includes the grpc client preset.
+
+```go
+package main
+
+import (
+  "gitlab.com/firestart/ignition/x/application/presets"
+)
+
+func main() {
+  app := presets.NewRpcApp(
+    "example-grpc-app", // The name of the application
+    // Add additional extensions here, if needed
+    // If you want to use the grpc client preset, add it here, like this:
+    presets.WithRpcClientFactory(),
+  )
+  app.Run()
+}
+```
+
+### Http Preset
+
+The http preset is the blank preset with the http extension.
+
+```go
+package main
+
+import (
+  "gitlab.com/firestart/ignition/x/application/presets"
+)
+
+func main() {
+  app := presets.NewHttpApp(
+    "example-http-app", // The name of the application
+    // Add additional extensions here, if needed
+  )
+  app.Run()
+}
+```
