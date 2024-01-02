@@ -81,9 +81,9 @@ func main() {
   app := application.New(
     http.WithServer())
 
-  // Be aware that the hook is called for every request for every:
-  // - http server
-  // - grpc server (if you use the grpc extension)
+  // Be aware that the hook is called for every request of:
+  // - a http server
+  // - a grpc server (if you use the grpc extension)
   app.AddContextProcessor(application.HookRequest, func(ctx context.Context, app application.App) (context.Context, error) {
     // Add your code here
     return ctx, nil
