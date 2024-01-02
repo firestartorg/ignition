@@ -81,7 +81,7 @@ func main() {
   app := application.New(
     http.WithServer())
 
-  app.AddContextProcessor(application.HookRequest, func(ctx context.Context, app App) (context.Context, error) {
+  app.AddContextProcessor(application.HookRequest, func(ctx context.Context, app application.App) (context.Context, error) {
     // Add your code here
     return ctx, nil
   })
