@@ -11,7 +11,7 @@ Usage of the application package is simple. Create a new application and run it.
 package main
 
 import (
-  "gitlab.com/firestart/ignition/pkg/application"
+  "gitlab.com/firestart/ignition/x/application"
 )
 
 func main() {
@@ -27,8 +27,8 @@ For example, if you want to use the configuration extension, you can add it like
 package main
 
 import (
-  "gitlab.com/firestart/ignition/pkg/application"
-  "gitlab.com/firestart/ignition/pkg/application/extensions/config"
+  "gitlab.com/firestart/ignition/x/application"
+  "gitlab.com/firestart/ignition/x/application/extensions/config"
 )
 
 func main() {
