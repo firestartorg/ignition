@@ -92,4 +92,4 @@ IGNITION_NAME=Test
 IGNITION_TEST_SSL__VALUE=test
 ```
 
-The environment variable naming convention follow the same rules as the [ASP.Net Core configuration](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-8.0#naming-of-environment-variables).
+This package follows the same rules for configuration as [ASP.Net Core configuration](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-8.0#naming-of-environment-variables).
