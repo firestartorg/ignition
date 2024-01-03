@@ -1,6 +1,6 @@
 # Config
 
-Config is a package that provides a way to load layered configuration from multiple sources.
+Config is a package that provides a way to load layered configurations from multiple sources.
 
 ## Usage
 
