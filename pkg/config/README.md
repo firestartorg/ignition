@@ -12,6 +12,9 @@ with each layer overriding the previous layer. The layers are loaded in the foll
 3. Configuration file
 4. Default configuration
 
+*Each layer can be overridden by the next layer. For example, if a configuration key is set in the environment variables,*
+*it will override the same key in the configuration file.*
+
 The configuration file is loaded from the following locations:
 
 1. `./appsettings.yaml`
