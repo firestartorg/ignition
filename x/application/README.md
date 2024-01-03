@@ -52,7 +52,7 @@ provides a number of extensions that can be used to add functionality to your ap
 - [monitor](extensions/monitor/README.md) - Provides monitoring functionality using [prometheus](https://github.com/prometheus/client_golang)
 - config - Provides configuration management
 - logger - Provides logging functionality using [zerolog](https://github.com/rs/zerolog)
-- sentry - Provides error reporting using [sentry](https://sentry.io)
+- [sentry](extensions/sentry/README.md) - Provides error reporting using [sentry](https://sentry.io)
 - sentry/recovery - Provides recovery using [sentry](https://sentry.io)
 - sentry/tracing - Provides tracing using [sentry](https://sentry.io)
 - vcs - Provides version control system information
