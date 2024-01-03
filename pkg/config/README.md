@@ -25,6 +25,11 @@ from the current working directory of the application (can be overridden using t
 
 ### Example
 
+The following example shows how to use the configuration package. It highlights the following features:
+
+- loading a layered configuration (dynamic configuration)
+- unpacking the configuration into a struct (static configuration)
+
 ```go
 package main
 
