@@ -44,8 +44,8 @@ Once you have provided all of your dependencies, you can use the `Get`, `GetName
 to retrieve your dependencies.
 
 ```go
-service, err := injector.Get(inj, Service{})
-service, err := injector.GetNamed(inj, "service", Service{})
-service := injector.MustGet(inj, Service{})
-service := injector.MustGetNamed(inj, "service", Service{})
+service, err := injector.Get[Service](inj, Service{})
+service, err := injector.GetNamed[Service](inj, "service", Service{})
+service := injector.MustGet[Service](inj, Service{})
+service := injector.MustGetNamed[Service](inj, "service", Service{})
 ```
