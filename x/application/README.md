@@ -61,6 +61,52 @@ provides a number of extensions that can be used to add functionality to your ap
 Ignition also provides a number of presets that can be used to quickly add functionality to your application. 
 For more information on presets, see the [presets](#presets) section.
 
+### How to write an extension
+
+Extensions are simple to write. They are just functions that take an application. Therefore they have access to
+all of the application's functionality, including the injector and hooks.
+
+```go
+package myextension
+
+import (
+  "gitlab.com/firestart/ignition/x/application"
+)
+
+func WithMyExtension() application.Option {
+  return func(app application.Application) {
+    // Do something here
+  }
+}
+```
+
+For example, the http extension is written like this:
+
+```go
+package http
+
+import (
+  "gitlab.com/firestart/ignition/pkg/injector"
+  "gitlab.com/firestart/ignition/x/application"
+)
+
+func WithHttpServer() application.Option {
+  return func(app application.Application) {
+    server := newHttpServer()
+    // Add the server to the injector
+    injector.InjectNamed(app.Injector, "http-server", server)
+    // Start the server when the application starts
+    app.AddHook(application.HookStartup, func(ctx context.Context, app App) error {
+      return server.Start()
+    })
+    // Stop the server when the application stops
+    app.AddHook(application.HookShutdown, func(ctx context.Context, app App) error {
+      return server.Stop()
+    })
+  }
+}
+```
+
 ## Presets
 
 Presets are a collection of extensions that can be used to quickly add functionality to your application.

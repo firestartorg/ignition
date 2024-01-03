@@ -2,8 +2,9 @@ package application
 
 import (
 	"context"
-	"github.com/rs/zerolog/log"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Hook = string
