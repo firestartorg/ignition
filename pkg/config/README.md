@@ -50,7 +50,7 @@ func main() {
   configuration, _ := config.LoadConfig() // Load dynamic configuration
 
   // Staticly override configuration
-  configuration.Set("Name:Test", "Test") // Sub configuration can be set using a colon
+  configuration.Set("TestSsl:Value", "Test") // Sub configuration can be set using a colon
 
   var cfg Config
   _ = configuration.Unpack(&cfg) // Unpack the configuration into a struct
